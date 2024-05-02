@@ -1,6 +1,7 @@
 exports.renderHomepage = function(req, res) {
-    res.render('homepage',{user: false});
+    res.render('homepage', { user: req.user });
 }
+
 
 exports.renderLogin = function(req, res) {
     res.render('login');
@@ -8,8 +9,12 @@ exports.renderLogin = function(req, res) {
 exports.loginHandler = function(req, res) {
     const { username, password } = req.body;
   
-    // Log the username and password to the console
     console.log('Username:', username);
     console.log('Password:', password);
-    setTimeout(() => {res.redirect('/');}, 1500);
+
+    if (username === "test" && password === "password") {
+      return res.json({ success: true, message: 'Login successful!' });
+    } else {
+      return res.status(401).json({ success: false, message: 'Invalid username or password.' });
+    }
 };

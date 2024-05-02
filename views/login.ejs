@@ -94,8 +94,6 @@
       var username = document.getElementById("login-username").value;
       var password = document.getElementById("login-password").value;
 
-      // You can perform validation here before sending the request to the server
-      // For simplicity, let's assume the fields are not empty
       if (username && password) {
         fetch('/login', {
           method: 'POST',
@@ -104,24 +102,23 @@
           },
           body: JSON.stringify({ username, password })
         })
-          // .then(response => response.json())
-          // .then(data => {
-          //   // Handle the response from the server
-          //   if (data.success) {
-          //     // Login successful
-          //     document.getElementById("login-message").innerText = "Login successful!";
-          //   } else {
-          //     // Login failed
-          //     document.getElementById("login-message").innerText = "Invalid username or password.";
-          //   }
-          // })
-          // .catch(error => {
-          //   // Handle any errors that occurred during the request
-          //   console.error('Error:', error);
-          //   document.getElementById("login-message").innerText = "An error occurred. Please try again later.";
-          // });
-        document.getElementById("login-message").style.color = "green";
-        document.getElementById("login-message").innerText = "Login successful!";
+          .then(response => response.json())
+          .then(data => {
+
+            if (data.success) {
+              document.getElementById("login-message").style.color = "green";
+              document.getElementById("login-message").innerText = "Login successful!";
+              setTimeout(() => {
+                window.location.href = '/';
+              }, 1000);
+            } else {
+              document.getElementById("login-message").innerText = "Invalid username or password.";
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            document.getElementById("login-message").innerText = "An error occurred. Please try again later.";
+          });
       } else {
         document.getElementById("login-message").innerText = "Please enter username and password.";
       }
