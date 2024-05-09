@@ -2,7 +2,8 @@ CREATE TABLE "Users" (
   "id" int PRIMARY KEY,
   "username" varchar(255) UNIQUE,
   "password" varchar(255),
-  "email" varchar(255) UNIQUE
+  "email" varchar(255) UNIQUE,
+  "avatar_location" varchar(255) UNIQUE
 );
 
 CREATE TABLE "Songs" (

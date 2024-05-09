@@ -17,6 +17,10 @@ const User = sequelize.define('user', {
   email: {
     type: Sequelize.STRING,
     unique: true
+  },
+  avatar_location: {
+    type: Sequelize.STRING,
+    defaultValue: 'default.jpg'
   }
 });
 
