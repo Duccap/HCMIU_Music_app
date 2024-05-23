@@ -236,3 +236,91 @@ body {
     width: 300px;
     height: 200px;
 }
+
+.container main .playlist {
+    margin-top: 14px;
+    display: flex;
+    gap: 20px;
+}
+
+.container main .playlist .genres {
+    color: #fff;
+    background-color: #202026;
+    padding: 20px;
+    border-radius: 6px;
+    width: 40%;
+}
+
+.container main .playlist .genres .header,
+.container main .playlist .music-list .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.container main .playlist .genres .header a,
+.container main .playlist .music-list .header a {
+    font-size: 12px;
+    color: #919191;
+}
+
+.container main .playlist .genres .items {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.container main .playlist .genres .items .item {
+    padding: 22px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    cursor: pointer;   
+}
+
+
+.container main .playlist .genres .items .item p {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.container main .playlist .genres .items .item:nth-child(1) {
+    background-color: #476a8a;
+}
+.container main .playlist .genres .items .item:nth-child(2) {
+    background-color: #a69984;
+}
+.container main .playlist .genres .items .item:nth-child(3) {
+    background-color: #a24c34;
+}
+.container main .playlist .genres .items .item:nth-child(4) {
+    background-color: #0d4045;
+}
+.container main .playlist .genres .items .item:nth-child(5) {
+    background-color: #a67894;
+}
+.container main .playlist .genres .items .item:nth-child(6) {
+    background-color: #5547a5;
+}
+
+.container main .playlist .music-list {
+    background-color: #202026;
+    padding: 20px;
+    color: #fff;
+    border-radius: 6px;
+    width: 65%;
+}
+
+
+.container main .playlist .music-list .items .item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.container main .playlist .music-list .items .item .info img {
+    width: 50px;
+}
