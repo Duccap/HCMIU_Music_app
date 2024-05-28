@@ -1,19 +1,15 @@
-IMAGE_NAME := postgres:12-alpine
-CONTAINER_NAME := postgres-music_app
+IMAGE_NAME := mysql:8.0
+CONTAINER_NAME := mysql-music_app
 DB_NAME := music_app
 
-postgres:
-	@docker run --name $(CONTAINER_NAME) -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d $(IMAGE_NAME)
+mysql:
+	@docker run --name $(CONTAINER_NAME) -p 3306:3306 -e MYSQL_ROOT_PASSWORD=secret -d $(IMAGE_NAME)
 
 createdb:
-	@docker exec -it postgres-music_app createdb --username=root --owner=root $(DB_NAME)
-
+	@docker exec -it $(CONTAINER_NAME) mysql -uroot -psecret -e "CREATE DATABASE $(DB_NAME)"
 
 dropdb:
-	@docker exec -it postgres-music_app dropdb $(DB_NAME)
-
-
-
+	@docker exec -it $(CONTAINER_NAME) mysql -uroot -psecret -e "DROP DATABASE $(DB_NAME)"
 
 
 migratedown:
