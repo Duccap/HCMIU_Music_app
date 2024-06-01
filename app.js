@@ -1,7 +1,8 @@
 const path = require('path');
-
+const session = require('express-session');
 const express = require('express');
 const bodyParser = require('body-parser');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 // define models here
 const sequelize = require('./util/database');
@@ -22,6 +23,17 @@ app.use(bodyParser.json());
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(session({
+    secret: 'duccap', // Replace with your own secret
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // Set to true if using HTTPS
+    store: new SequelizeStore({
+        db: sequelize
+    })
+}));
+
 
 app.use(userRoutes);
 

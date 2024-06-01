@@ -1,20 +1,37 @@
+const User = require('../models/user');
+
 exports.renderHomepage = function(req, res) {
     res.render('homepage', { user: req.user });
 }
 
 
-exports.renderLogin = function(req, res) {
+exports.getLogin = function(req, res) {
     res.render('login');
 }
-exports.loginHandler = function(req, res) {
-    const { username, password } = req.body;
-  
-    console.log('Username:', username);
-    console.log('Password:', password);
+exports.postLogin = function(req, res) {
+  const { username, password } = req.body;
 
-    if (username === "test" && password === "password") {
+  User.findOne({ where: { username: username } })
+    .then(user => {
+      if (!user) {
+        return res.status(401).json({ success: false, message: 'Invalid username or password.' });
+      }
+
+      if (user.password !== password) {
+        return res.status(401).json({ success: false, message: 'Invalid username or password.' });
+      }
+
+      // Create session or set authentication token
+      req.session.user = user;
+      req.session.isLoggedIn = true;
+      // or
+      // const token = generateAuthToken(user);
+      // res.header('x-auth-token', token);
+      
       return res.json({ success: true, message: 'Login successful!' });
-    } else {
-      return res.status(401).json({ success: false, message: 'Invalid username or password.' });
-    }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      return res.status(500).json({ success: false, message: 'Internal server error.' });
+    });
 };
