@@ -1,7 +1,7 @@
 const Sequelize = require('sequelize');
 const sequelize = require('../util/database');
 
-const User = sequelize.define('user', {
+const User = sequelize.define('User', {
   id: {
     type: Sequelize.INTEGER,
     primaryKey: true,
@@ -17,7 +17,13 @@ const User = sequelize.define('user', {
   email: {
     type: Sequelize.STRING,
     unique: true
+  },
+  avatar_location: {
+    type: Sequelize.STRING,
+    defaultValue: 'default.jpg'
   }
+}, {
+  timestamps: false 
 });
 
 module.exports = User;
