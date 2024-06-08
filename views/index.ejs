@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/styles/style.css">
+    <title>Music Player Platform</title>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/songs">Songs</a>
+            <% if (user) { %>
+                <a href="/playlists">Playlists</a>
+                <div class="user-info">
+                    <img src="<%= user.avatar_location %>" alt="<%= user.username %>'s avatar" class="avatar">
+                    <span><%= user.username %></span>
+                    <form action="/logout" method="post">
+                        <button type="submit">Logout</button>
+                    </form>
+                </div>
+            <% } else { %>
+                <a href="/login">Login</a>
+            <% } %>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Welcome to the Music Player Platform</h1>
+        <% if (user) { %>
+            <p>Hello, <%= user.username %>! Enjoy your personalized music experience.</p>
+        <% } else { %>
+            <p>Welcome! Please log in to access your playlists and personalized content.</p>
+        <% } %>
+
+        <h2>Available Songs</h2>
+        <ul>
+            <% songs.forEach(song => { %>
+                <li>
+                    <h3><%= song.title %> by <%= song.artist %></h3>
+                    <audio controls>
+                        <source src="<%= song.file_location %>" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </li>
+            <% }) %>
+        </ul>
+    </main>
+</body>
+
+</html>
