@@ -12,7 +12,10 @@ const playlist = require('./models/playlist');
 const playlist_song = require('./models/playlist_song');
 
 // add routes here (add the correct path)
-const userRoutes = require('./routes/user');
+const homeRoutes = require('./routes/homeRoutes');
+const userRoutes = require('./routes/userRoutes');
+const songRoutes = require('./routes/songRoutes');
+const playlistRoutes = require('./routes/playlistRoutes');
 
 
 const app = express();
@@ -35,7 +38,11 @@ app.use(session({
 }));
 
 
+app.use(homeRoutes);
 app.use(userRoutes);
+app.use(songRoutes);
+app.use(playlistRoutes);
+
 
 // create associations
 playlist.belongsTo(user, { foreignKey: 'user_id' });

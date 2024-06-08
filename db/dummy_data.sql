@@ -4,9 +4,9 @@ INSERT INTO "Users" (id, username, password, email, avatar_location) VALUES
 (3, 'user3', 'password3', 'user3@example.com', '/avatars/avatar3.jpg');
 
 INSERT INTO "Songs" (id, title, artist, album, duration, file_location) VALUES
-(1, 'Song 1', 'Artist 1', 'Album 1', 180, '/songs/song1.mp3'),
-(2, 'Song 2', 'Artist 2', 'Album 2', 240, '/songs/song2.mp3'),
-(3, 'Song 3', 'Artist 3', 'Album 3', 200, '/songs/song3.mp3');
+(1, 'Song 1', 'Artist 1', 'Album 1', 180, '/music/song1.mp3'),
+(2, 'Song 2', 'Artist 2', 'Album 2', 240, '/music/song2.mp3'),
+(3, 'Song 3', 'Artist 3', 'Album 3', 200, '/music/song3.mp3');
 
 INSERT INTO "Playlists" (id, name, user_id) VALUES
 (1, 'Playlist 1', 1),
