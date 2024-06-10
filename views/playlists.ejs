@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/styles/style.css">
+    <title>My Playlists</title>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/songs">Songs</a>
+            <% if (user) { %>
+                <a href="/playlists">Playlists</a>
+                <div class="user-info">
+                    <img src="<%= user.avatar_location %>" alt="<%= user.username %>'s avatar" class="avatar">
+                    <span><%= user.username %></span>
+                    <form action="/logout" method="post">
+                        <button type="submit">Logout</button>
+                    </form>
+                </div>
+            <% } else { %>
+                <a href="/login">Login</a>
+            <% } %>
+        </nav>
+    </header>
+
+    <main>
+        <h1>My Playlists</h1>
+        <form action="/playlists" method="post">
+            <input type="text" name="name" placeholder="New Playlist Name" required>
+            <button type="submit">Create Playlist</button>
+        </form>
+        <ul>
+            <% playlists.forEach(playlist => { %>
+                <li>
+                    <a href="/playlists/<%= playlist.id %>"><%= playlist.name %></a>
+                    <form action="/playlists/<%= playlist.id %>/delete" method="post" style="display:inline;">
+                        <button type="submit">Delete</button>
+                    </form>
+                </li>
+            <% }) %>
+        </ul>
+    </main>
+</body>
+
+</html>

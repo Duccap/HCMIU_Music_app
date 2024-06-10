@@ -1,7 +1,8 @@
 const path = require('path');
-
+const session = require('express-session');
 const express = require('express');
 const bodyParser = require('body-parser');
+const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 // define models here
 const sequelize = require('./util/database');
@@ -11,7 +12,10 @@ const playlist = require('./models/playlist');
 const playlist_song = require('./models/playlist_song');
 
 // add routes here (add the correct path)
-const userRoutes = require('./routes/user');
+const homeRoutes = require('./routes/homeRoutes');
+const userRoutes = require('./routes/userRoutes');
+const songRoutes = require('./routes/songRoutes');
+const playlistRoutes = require('./routes/playlistRoutes');
 
 
 const app = express();
@@ -23,7 +27,22 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(session({
+    secret: 'duccap', // Replace with your own secret
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }, // Set to true if using HTTPS
+    store: new SequelizeStore({
+        db: sequelize
+    })
+}));
+
+
+app.use(homeRoutes);
 app.use(userRoutes);
+app.use(songRoutes);
+app.use(playlistRoutes);
+
 
 // create associations
 playlist.belongsTo(user, { foreignKey: 'user_id' });
@@ -42,5 +61,5 @@ sequelize.sync().then(result => { // remove force in production
     app.listen(3000);
 }).catch(err => {
     console.log("Error in syncing database:")
-    // console.log(err);
+    console.log(err);
 });

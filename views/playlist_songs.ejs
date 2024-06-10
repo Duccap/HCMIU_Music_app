@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="/styles/style.css">
+    <title>Playlist: <%= playlist.name %></title>
+</head>
+
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/songs">Songs</a>
+            <% if (user) { %>
+                <a href="/playlists">Playlists</a>
+                <div class="user-info">
+                    <img src="<%= user.avatar_location %>" alt="<%= user.username %>'s avatar" class="avatar">
+                    <span><%= user.username %></span>
+                    <form action="/logout" method="post">
+                        <button type="submit">Logout</button>
+                    </form>
+                </div>
+            <% } else { %>
+                <a href="/login">Login</a>
+            <% } %>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Playlist: <%= playlist.name %></h1>
+        <h2>Songs in this playlist</h2>
+        <ul>
+            <% playlistSongs.forEach(ps => { %>
+                <li>
+                    <%= ps.Song.title %> by <%= ps.Song.artist %>
+                    <audio controls>
+                        <source src="<%= ps.Song.file_location %>" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    <form action="/playlists/<%= playlist.id %>/songs/<%= ps.song_id %>/delete" method="post" style="display:inline;">
+                        <button type="submit">Remove</button>
+                    </form>
+                </li>
+            <% }) %>
+        </ul>
+
+        <h2>Add a new song</h2>
+        <form action="/playlists/<%= playlist.id %>/songs" method="post">
+            <select name="songId" required>
+                <% songs.forEach(song => { %>
+                    <option value="<%= song.id %>"><%= song.title %> by <%= song.artist %></option>
+                <% }) %>
+            </select>
+            <button type="submit">Add to Playlist</button>
+        </form>
+    </main>
+</body>
+
+</html>

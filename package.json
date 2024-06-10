@@ -15,8 +15,10 @@
   },
   "dependencies": {
     "body-parser": "^1.18.3",
+    "connect-session-sequelize": "^7.1.7",
     "ejs": "^2.6.1",
     "express": "^4.16.3",
+    "express-session": "^1.18.0",
     "mysql2": "^3.9.8",
     "sequelize": "^6.37.3"
   }
