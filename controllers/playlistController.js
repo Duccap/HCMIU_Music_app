@@ -30,13 +30,19 @@ exports.createPlaylist = async (req, res) => {
 exports.deletePlaylist = async (req, res) => {
     const { playlistId } = req.params;
     try {
+        // Delete all PlaylistSong entries for this playlist
+        await PlaylistSong.destroy({ where: { playlist_id: playlistId } });
+        
+        // Delete the playlist
         await Playlist.destroy({ where: { id: playlistId, user_id: req.session.user.id } });
+        
         res.redirect('/playlists');
     } catch (error) {
         console.error('Error deleting playlist:', error);
         res.status(500).send('Internal Server Error');
     }
 };
+
 
 exports.getPlaylistSongs = async (req, res) => {
     const { playlistId } = req.params;
@@ -45,8 +51,16 @@ exports.getPlaylistSongs = async (req, res) => {
         if (!playlist || playlist.user_id !== req.session.user.id) {
             return res.status(404).send('Playlist not found');
         }
+
+        // Fetch all songs
         const songs = await Song.findAll();
-        const playlistSongs = await PlaylistSong.findAll({ where: { playlist_id: playlistId } });
+
+        // Fetch playlist songs and include the associated Song data
+        const playlistSongs = await PlaylistSong.findAll({
+            where: { playlist_id: playlistId },
+            include: [Song]
+        });
+
         res.render('playlist_songs', { user: req.session.user, playlist, songs, playlistSongs });
     } catch (error) {
         console.error('Error fetching playlist songs:', error);

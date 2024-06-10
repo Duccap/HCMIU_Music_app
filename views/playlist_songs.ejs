@@ -35,7 +35,11 @@
         <ul>
             <% playlistSongs.forEach(ps => { %>
                 <li>
-                    <%= ps.song.title %> by <%= ps.song.artist %>
+                    <%= ps.Song.title %> by <%= ps.Song.artist %>
+                    <audio controls>
+                        <source src="<%= ps.Song.file_location %>" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
                     <form action="/playlists/<%= playlist.id %>/songs/<%= ps.song_id %>/delete" method="post" style="display:inline;">
                         <button type="submit">Remove</button>
                     </form>

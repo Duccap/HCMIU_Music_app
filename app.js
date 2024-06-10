@@ -61,5 +61,5 @@ sequelize.sync().then(result => { // remove force in production
     app.listen(3000);
 }).catch(err => {
     console.log("Error in syncing database:")
-    // console.log(err);
+    console.log(err);
 });
