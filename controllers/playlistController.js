@@ -69,8 +69,9 @@ exports.getPlaylistSongs = async (req, res) => {
 };
 
 exports.addSongToPlaylist = async (req, res) => {
-    const playlistId = req.params.playlistId;
+    const playlistId = req.params.playlistId || req.body.playlistId;
     const songId = req.body.songId;
+    console.log('Adding song to playlist:', { playlistId, songId }); // Logging for debugging
     try {
         await PlaylistSong.create({ playlist_id: playlistId, song_id: songId });
         res.redirect(req.headers.referer); // Redirect back to the previous page
@@ -79,6 +80,7 @@ exports.addSongToPlaylist = async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 };
+
 
 exports.removeSongFromPlaylist = async (req, res) => {
     const { playlistId, songId } = req.params;
