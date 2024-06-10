@@ -71,10 +71,9 @@ exports.getPlaylistSongs = async (req, res) => {
 exports.addSongToPlaylist = async (req, res) => {
     const playlistId = req.params.playlistId;
     const songId = req.body.songId;
-    console.log('playlistId:', playlistId);
     try {
         await PlaylistSong.create({ playlist_id: playlistId, song_id: songId });
-        res.redirect(`/playlists/${playlistId}`);
+        res.redirect(req.headers.referer); // Redirect back to the previous page
     } catch (error) {
         console.error('Error adding song to playlist:', error);
         res.status(500).send('Internal Server Error');

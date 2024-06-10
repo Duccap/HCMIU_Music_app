@@ -39,6 +39,17 @@
                         <source src="<%= song.file_location %>" type="audio/mpeg">
                         Your browser does not support the audio element.
                     </audio>
+                    <% if (user) { %>
+                        <form action="/playlists/addSong" method="post" style="display:inline;">
+                            <input type="hidden" name="songId" value="<%= song.id %>">
+                            <select name="playlistId" required>
+                                <% playlists.forEach(playlist => { %>
+                                    <option value="<%= playlist.id %>"><%= playlist.name %></option>
+                                <% }) %>
+                            </select>
+                            <button type="submit">Add to Playlist</button>
+                        </form>
+                    <% } %>
                 </li>
             <% }) %>
         </ul>
