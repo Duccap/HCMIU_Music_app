@@ -613,6 +613,11 @@ function getUserAccessToken() {
   return localStorage.getItem("userAccessToken");
 }
 
+
+
+
+
+
 //HOME PAGE//
 document.addEventListener("DOMContentLoaded", async () => {
   const userAccessToken = getUserAccessToken();
@@ -716,15 +721,6 @@ async function fetchGenres() {
 //   });
 // }
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const genres = await fetchGenres();
-  displayGenres(genres);
-});
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const genres = await fetchGenres();
-  displayGenres(genres);
-});
 
 document.addEventListener('DOMContentLoaded', async () => {
   const genres = await fetchGenres();
@@ -740,61 +736,140 @@ function displayGenres(genres) {
     genreDiv.className = 'item';
     genreDiv.style.backgroundColor = getRandomColor(); // Áp dụng màu ngẫu nhiên
     genreDiv.innerHTML = `<p>${genre.name}</p>`;
-    genreDiv.addEventListener('click', () => {
-      loadGenreContent(genre.id);
+    genreDiv.addEventListener('click', async () => {
+      const playlists = await fetchCategoryPlaylists(genre.id);
+      if (playlists.length > 0) {
+        displayPlaylistDetails(playlists[0]); // Hiển thị chi tiết playlist đầu tiên
+      } else {
+        console.error('No playlists found for this category');
+      }
     });
     itemsContainer.appendChild(genreDiv);
   });
 }
 
-function loadGenreContent(genreId) {
-  fetch(`/search-results?genreId=${genreId}`)
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.text();
-    })
-    .then(html => {
-      const mainElement = document.getElementById('results');
-      if (mainElement) {
-        mainElement.innerHTML = html;
-      } else {
-        console.error('Main element not found');
-      }
-    })
-    .catch(error => console.error('Failed to load genre content:', error));
+
+let currentTracks = [];
+
+
+async function displayPlaylistDetails(playlist) {
+  const tracks = await fetchPlaylistTracks(playlist.id);
+  currentTracks = tracks; // Lưu trữ danh sách các track hiện tại
+  currentTrackIndex = 0; // Đặt lại chỉ số bài hát hiện tại
+
+  const mainElement = document.querySelector('main');
+  mainElement.innerHTML = ''; // Xóa nội dung hiện tại
+
+  // Hiển thị thông tin chi tiết của playlist
+  const playlistDetails = document.createElement('div');
+  playlistDetails.className = 'playlist-details';
+  playlistDetails.innerHTML = `
+    <img src="${playlist.images[0].url}" alt="${playlist.name}">
+    <h2>${playlist.name}</h2>
+    <p>By ${playlist.owner.display_name} • ${playlist.tracks.total} songs</p>
+  `;
+  mainElement.appendChild(playlistDetails);
+
+  // Kiểm tra xem playlist đã được lưu chưa và cập nhật nút "Save Playlist"
+  const isPlaylistSaved = await checkIfPlaylistSaved(playlist.id);
+  const saveButton = document.createElement('button');
+  saveButton.textContent = isPlaylistSaved ? 'Unsave Playlist' : 'Save Playlist';
+  saveButton.addEventListener('click', async () => {
+    if (isPlaylistSaved) {
+      await removeFromSavedPlaylists(playlist.id);
+    } else {
+      await addToSavedPlaylists(playlist.id);
+    }
+    saveButton.textContent = isPlaylistSaved ? 'Save Playlist' : 'Unsave Playlist';
+  });
+  playlistDetails.appendChild(saveButton);
+
+  // Hiển thị danh sách các track
+  const trackList = document.createElement('div');
+  trackList.className = 'track-list';
+  tracks.forEach((track, index) => {
+    const trackDiv = document.createElement('div');
+    trackDiv.className = 'track-item';
+    trackDiv.innerHTML = `<span>${track.name} by ${track.artists.map(artist => artist.name).join(', ')}</span>`;
+    addLikeButton(track, trackDiv);
+    addPlaylistDropdown(track, trackDiv);
+    trackDiv.addEventListener('click', () => {
+      currentTrackIndex = index; // Cập nhật chỉ số bài hát hiện tại
+      playTrackAndUpdateUI(track);
+    });
+    trackList.appendChild(trackDiv);
+  });
+  mainElement.appendChild(trackList);
+
+  // Gắn sự kiện cho các nút Previous và Next
+  document.getElementById('previousIcon').addEventListener('click', playPreviousTrack);
+  document.getElementById('nextIcon').addEventListener('click', playNextTrack);
+}
+
+function playTrackAndUpdateUI(track) {
+  // Giả sử bạn đang phát track và cập nhật UI tại đây
+  console.log("Playing track:", track.name);
+
+  // Cập nhật giao diện người dùng với thông tin bài hát
+  document.querySelector('.player .track-name').textContent = track.name;
+  document.querySelector('.player .artist-name').textContent = track.artists.map(artist => artist.name).join(', ');
+  document.querySelector('.player .album-name').textContent = track.album.name;
+  document.querySelector('.player .album-art').src = track.album.images[0].url;
+}
+
+function playNextTrack() {
+  if (currentTrackIndex < currentTracks.length - 1) {
+    currentTrackIndex++;
+    playTrackAndUpdateUI(currentTracks[currentTrackIndex]);
+  } else {
+    console.log('This is the last track in the playlist.');
+  }
+}
+
+function playPreviousTrack() {
+  if (currentTrackIndex > 0) {
+    currentTrackIndex--;
+    playTrackAndUpdateUI(currentTracks[currentTrackIndex]);
+  } else {
+    console.log('This is the first track in the playlist.');
+  }
+}
+
+async function fetchPlaylistTracks(playlistId) {
+  const accessToken = await ensureAccessToken();
+  if (!accessToken) {
+    console.error("Access token is required to call Spotify API");
+    return [];
+  }
+
+  try {
+    const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch tracks for playlist " + playlistId);
+    }
+
+    const data = await response.json();
+    return data.items.map(item => item.track);
+  } catch (error) {
+    console.error("Error fetching tracks for playlist " + playlistId + ":", error);
+    return [];
+  }
 }
 
 function getRandomColor() {
-  const colors = ["#ff4b4b", "#4bff4b", "#4b4bff", "#ff4bff", "#4bffff", "#ffff4b"];
+  const colors = ['#476a8a', '#a69984', '#a24c34', '#0d4045', '#a67894', '#5547a5'];
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-const colors = ['#476a8a', '#a69984', '#a24c34', '#0d4045', '#a67894', '#5547a5'];
-function applyRandomColors() {
-  const items = document.querySelectorAll('.container main .playlist .genres .items .item');
-
-  items.forEach(item => {
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-    item.style.backgroundColor = randomColor;
-  });
-}
 
 
 
