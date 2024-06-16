@@ -12,6 +12,8 @@
   // });
 
 
+
+
 function loadPage(page) {
   fetch(page)
     .then(response => {
@@ -669,9 +671,13 @@ function updateTrendingSong(song) {
 
 
 
-async function fetchGenreSeeds() {
-  const accessToken = await ensureAccessToken(); // Đảm bảo rằng bạn có accessToken hợp lệ
-  const url = 'https://api.spotify.com/v1/recommendations/available-genre-seeds'; // URL API để lấy thể loại
+// document.addEventListener('DOMContentLoaded', async () => {
+//   const genres = await fetchGenres();
+//   displayGenres(genres);
+// });
+async function fetchGenres() {
+  const accessToken = await getUserAccessToken(); // Giả sử bạn đã có hàm này để lấy accessToken
+  const url = 'https://api.spotify.com/v1/browse/categories';
 
   try {
     const response = await fetch(url, {
@@ -683,33 +689,103 @@ async function fetchGenreSeeds() {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch genre seeds: ${response.status} ${response.statusText}`);
+      throw new Error(`Failed to fetch genres: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    const limitedGenres = data.genres.slice(0, 10); // Giới hạn chỉ lấy 10 thể loại đầu tiên
-    return limitedGenres; // Trả về danh sách các thể loại đã giới hạn
+    return data.categories.items;
   } catch (error) {
-    console.error('Error fetching genre seeds:', error);
+    console.error('Error fetching genres:', error);
     return [];
   }
 }
-document.addEventListener('DOMContentLoaded', () => {
-  updateGenreSeedsUI(); // Cập nhật UI khi trang tải xong
+
+// function displayGenres(genres) {
+//   const itemsContainer = document.querySelector('.items');
+//   itemsContainer.innerHTML = ''; // Xóa các mục hiện tại
+
+//   genres.forEach(genre => {
+//     const genreDiv = document.createElement('div');
+//     genreDiv.className = 'item';
+//     genreDiv.style.backgroundColor = applyRandomColors(); // Áp dụng màu ngẫu nhiên
+//     genreDiv.innerHTML = `<p>${genre.name}</p>`;
+//     genreDiv.addEventListener('click', () => {
+//       window.location.href = `/genre/${genre.id}`; // Giả sử đây là URL cho trang của thể loại
+//     });
+//     itemsContainer.appendChild(genreDiv);
+//   });
+// }
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const genres = await fetchGenres();
+  displayGenres(genres);
 });
-async function updateGenreSeedsUI() {
-  const genres = await fetchGenreSeeds(); // Lấy dữ liệu thể loại từ API
-  const genresDiv = document.querySelector('.genres .items');
-  genresDiv.innerHTML = ''; // Xóa các item hiện tại
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const genres = await fetchGenres();
+  displayGenres(genres);
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const genres = await fetchGenres();
+  displayGenres(genres);
+});
+
+function displayGenres(genres) {
+  const itemsContainer = document.querySelector('.items');
+  itemsContainer.innerHTML = ''; // Xóa các mục hiện tại
 
   genres.forEach(genre => {
-    const genreItem = document.createElement('div');
-    genreItem.className = 'item';
-    genreItem.innerHTML = `<p>${genre.replace(/-/g, ' ')}</p>`; // Thay thế dấu gạch ngang bằng khoảng trắng
-    genresDiv.appendChild(genreItem); // Thêm item mới
+    const genreDiv = document.createElement('div');
+    genreDiv.className = 'item';
+    genreDiv.style.backgroundColor = getRandomColor(); // Áp dụng màu ngẫu nhiên
+    genreDiv.innerHTML = `<p>${genre.name}</p>`;
+    genreDiv.addEventListener('click', () => {
+      loadGenreContent(genre.id);
+    });
+    itemsContainer.appendChild(genreDiv);
   });
-  applyRandomColors(); 
 }
+
+function loadGenreContent(genreId) {
+  fetch(`/search-results?genreId=${genreId}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.text();
+    })
+    .then(html => {
+      const mainElement = document.getElementById('results');
+      if (mainElement) {
+        mainElement.innerHTML = html;
+      } else {
+        console.error('Main element not found');
+      }
+    })
+    .catch(error => console.error('Failed to load genre content:', error));
+}
+
+function getRandomColor() {
+  const colors = ["#ff4b4b", "#4bff4b", "#4b4bff", "#ff4bff", "#4bffff", "#ffff4b"];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const colors = ['#476a8a', '#a69984', '#a24c34', '#0d4045', '#a67894', '#5547a5'];
 function applyRandomColors() {
   const items = document.querySelectorAll('.container main .playlist .genres .items .item');
@@ -719,25 +795,6 @@ function applyRandomColors() {
     item.style.backgroundColor = randomColor;
   });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2128,11 +2185,6 @@ async function playTrackAndUpdateUI(track) {
 }
 
 
-
-
-
-
-
 document.addEventListener('DOMContentLoaded', () => {
   const menuItems = document.querySelectorAll('.sidebar .menu ul li a');
   
@@ -2146,7 +2198,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function loadSectionData(section) {
-  const accessToken = await getUserAccessToken();
+  const accessToken =  getUserAccessToken();
   if (!accessToken) {
     console.error("Access token is required to call Spotify API");
     return;
