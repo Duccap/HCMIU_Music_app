@@ -613,6 +613,89 @@ function getUserAccessToken() {
   return localStorage.getItem("userAccessToken");
 }
 
+// ĐĂNG NHẬP TOKEN và PROFILE //
+document.addEventListener('DOMContentLoaded', () => {
+  const loginButton = document.getElementById('loginWithSpotify');
+  const userProfile = document.getElementById('userProfile');
+  const userName = document.getElementById('userName');
+  const timerElement = document.getElementById('timer');
+  let tokenExpirationTime;
+
+  // Kiểm tra trạng thái user token khi trang được tải
+  checkUserToken();
+
+  loginButton.addEventListener('click', async () => {
+    const token = await getSpotifyAccessToken();
+    if (token) {
+      tokenExpirationTime = new Date().getTime() + token.expires_in * 1000; // Lưu thời gian hết hạn của token
+      localStorage.setItem('spotifyToken', JSON.stringify(token));
+      updateUIForLoggedInUser(token);
+      startTokenExpirationTimer(token.expires_in);
+    }
+  });
+
+  function checkUserToken() {
+    const token = JSON.parse(localStorage.getItem('spotifyToken'));
+    if (token && !isTokenExpired()) {
+      tokenExpirationTime = new Date().getTime() + token.expires_in * 1000;
+      updateUIForLoggedInUser(token);
+      startTokenExpirationTimer((tokenExpirationTime - new Date().getTime()) / 1000);
+    } else {
+      updateUIForLoggedOutUser();
+    }
+  }
+
+  function updateUIForLoggedInUser(token) {
+    loginButton.style.display = 'none';
+    userProfile.style.display = 'block';
+    userName.textContent = 'User Name'; // Thay thế bằng tên người dùng thực tế
+  }
+
+  function updateUIForLoggedOutUser() {
+    loginButton.style.display = 'block';
+    userProfile.style.display = 'none';
+    timerElement.textContent = '00:00:00';
+  }
+
+  function startTokenExpirationTimer(duration) {
+    const endTime = new Date().getTime() + duration * 1000;
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const timeLeft = endTime - now;
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        localStorage.removeItem('spotifyToken');
+        updateUIForLoggedOutUser();
+        return;
+      }
+
+      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+      timerElement.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    }, 1000);
+  }
+
+  function pad(number) {
+    return number < 10 ? '0' + number : number;
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -734,7 +817,7 @@ function displayGenres(genres) {
   genres.forEach(genre => {
     const genreDiv = document.createElement('div');
     genreDiv.className = 'item';
-    genreDiv.style.backgroundColor = getRandomColor(); // Áp dụng màu ngẫu nhiên
+    genreDiv.style.backgroundColor = getRandomColorGenre(); // Áp dụng màu ngẫu nhiên
     genreDiv.innerHTML = `<p>${genre.name}</p>`;
     genreDiv.addEventListener('click', async () => {
       const playlists = await fetchCategoryPlaylists(genre.id);
@@ -863,15 +946,117 @@ async function fetchPlaylistTracks(playlistId) {
   }
 }
 
-function getRandomColor() {
+function getRandomColorGenre() {
   const colors = ['#476a8a', '#a69984', '#a24c34', '#0d4045', '#a67894', '#5547a5'];
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
+// TOP SONGS //
+async function fetchArtistsTopTracks(artistId) {
+  const accessToken = await ensureAccessToken();
+  if (!accessToken) {
+    console.error("Access token is required to call Spotify API");
+    return [];
+  }
 
+  const url = `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`;
 
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
 
+    if (!response.ok) {
+      throw new Error(`Failed to fetch top tracks for artist ${artistId}: ${response.status} ${response.statusText}`);
+    }
 
+    const data = await response.json();
+    return data.tracks;
+  } catch (error) {
+    console.error(`Error fetching top tracks for artist ${artistId}:`, error);
+    return [];
+  }
+}
+
+async function displayArtistsTopTracks(artistId) {
+  const topTracks = await fetchArtistsTopTracks(artistId);
+  const topTracksContainer = document.querySelector('.music-list .items');
+
+  topTracksContainer.innerHTML = ''; // Xóa các mục hiện tại
+
+  for (const track of topTracks) {
+    const isLiked = await checkIfLiked(track.id); // Kiểm tra trạng thái yêu thích từ API
+    const trackDiv = document.createElement('div');
+    trackDiv.className = 'item';
+    trackDiv.innerHTML = `
+      <div class="info">
+        <img src="${track.album.images[0].url}" alt="${track.name}">
+        <div class="details">
+          <h5>${track.name}</h5>
+          <p>${track.artists.map(artist => artist.name).join(', ')}</p>
+        </div>
+      </div>
+      <div class="actions">
+        <p>${formatDuration(track.duration_ms)}</p>
+        <div class="icon">
+          <i class="bx bxs-right-arrow"></i>
+        </div>
+        <i class="${isLiked ? 'bx bxs-heart' : 'bx bx-heart'}"></i>
+      </div>
+    `;
+    topTracksContainer.appendChild(trackDiv);
+
+    // Thêm sự kiện onclick vào icon phát nhạc
+    const playIcon = trackDiv.querySelector('.icon .bx.bxs-right-arrow');
+    playIcon.onclick = () => playTrackAndUpdateUI(track);
+
+    // Thêm sự kiện onclick vào icon trái tim
+    const likeIcon = trackDiv.querySelector('.bx.bxs-heart, .bx.bx-heart');
+    likeIcon.onclick = async () => {
+      const newLikedStatus = !isLiked;
+      await toggleLikeStatus(track.id, newLikedStatus);
+      likeIcon.className = newLikedStatus ? 'bx bxs-heart' : 'bx bx-heart';
+    };
+  }
+}
+
+async function checkIfLiked(trackId) {
+  try {
+    const response = await fetch(`/api/tracks/${trackId}/like`, { method: 'GET' });
+    if (!response.ok) throw new Error('Failed to check like status');
+    const data = await response.json();
+    return data.isLiked;
+  } catch (error) {
+    console.error('Error checking like status:', error);
+    return false;
+  }
+}
+
+async function toggleLikeStatus(trackId, likeStatus) {
+  try {
+    const method = likeStatus ? 'POST' : 'DELETE';
+    const response = await fetch(`/api/tracks/${trackId}/like`, { method: method });
+    if (!response.ok) throw new Error('Failed to toggle like status');
+    console.log(`Like status for track ${trackId} toggled to ${likeStatus}`);
+  } catch (error) {
+    console.error('Error toggling like status:', error);
+  }
+}
+
+function formatDuration(durationMs) {
+  const minutes = Math.floor(durationMs / 60000);
+  const seconds = ((durationMs % 60000) / 1000).toFixed(0);
+  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const artistId = '4dpARuHxo51G3z768sgnrY'; // Thay thế bằng ID thực tế của nghệ sĩ
+  displayArtistsTopTracks(artistId);
+});
 
 function createCacheKey(query, filters) {
   const baseKey = `search-${query}`;
