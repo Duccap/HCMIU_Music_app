@@ -1,0 +1,30 @@
+views/pages/callback.ejs
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Callback</title>
+</head>
+<body>
+  <script>
+    // Lấy access token từ URL
+    function getAccessTokenFromUrl() {
+      const hash = window.location.hash.substring(1);
+      const params = new URLSearchParams(hash);
+      return params.get('access_token');
+    }
+
+    // Lưu trữ access token vào localStorage
+    const accessToken = getAccessTokenFromUrl();
+    if (accessToken) {
+      localStorage.setItem('userAccessToken', accessToken);
+      // Chuyển hướng người dùng đến trang chính của bạn
+      window.location.href = '/';
+    } else {
+      // Xử lý trường hợp không có access token
+      alert('Failed to authenticate with Spotify');
+    }
+  </script>
+</body>
+</html>
