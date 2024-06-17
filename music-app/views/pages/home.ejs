@@ -79,16 +79,16 @@
             </li>
             <li>
               <i class="bx bxs-caret-right-circle"></i>
-              <a data-section="best-of-2023">Best of 2023</a>
+              <a data-section="Best of 2023">Best of 2023</a>
             </li>
             <li>
               <i class="bx bxs-caret-right-circle"></i>
-              <a data-section="best-of-2022">Best of 2022</a>
+              <a data-section="Best of 2022">Best of 2022</a>
             </li>
 
             <li>
               <i class="bx bxs-caret-right-circle"></i>
-              <a data-section="adele">Adele</a>
+              <a data-section="my-playlists">My Playlist</a>
             </li>
           </ul>
         </div>
@@ -107,7 +107,8 @@
         </div>
       </aside>
 
-      <main>
+      <main> 
+        
         
         <header>
           <div class="nav-link">
@@ -115,20 +116,20 @@
               <i class="bx bx-menu"></i>
             </button>
 
-            <a href="#">Music</a>
-            <a href="#">Live</a>
-            <a href="#">Podcasts</a>
+            <a id="musicLink">Music</a>
+            <a id="profileLink">Profile</a>
+            <!-- <a href="#">Podcasts</a> -->
           </div>
 
           <div class="search">
-            <i class="bx bx-search"></i>
-            <input
+            <i class="bx bx-search" onclick="searchSpotify()"></i>
+            <input onkeypress="if(event.keyCode==13) searchSpotify()"
               type="text"
               id="searchQuery"
               placeholder="Type here to search"
             />
-            <i class="bx bx-x-circle"></i>
-            <button onclick="searchSpotify()">Tìm kiếm</button>
+            <i class="bx bx-x-circle" onclick="document.getElementById('searchQuery').value = '';"></i>
+            
           </div>
         </header>
 
@@ -138,17 +139,18 @@
           <div class="left">
             <h5>Trending New Song</h5>
             <div class="info">
-              <h2>Hello</h2>
-              <h4>Adele</h4>
-              <h5>100 Million Plays</h5>
+              <h2></h2>
+              <h4></h4>
+              <h5></h5>
               <div class="buttons">
                 <button>Listen Now</button>
-                <i class="bx bxs-heart"></i>
+                <!-- <i class="bx bxs-heart"></i> -->
+                <div class="like-button-container"></div>
               </div>
             </div>
           </div>
           <img
-            src="https://static.tuoitre.vn/tto/i/s626//2015/10/28/ed5e4af2.jpg"
+            src=""
             alt=""
           />
         </div>
@@ -202,15 +204,10 @@
 
       <div class="right-section">
       
-      <div>
-          <button onclick="filterResults('all')">All</button>
-          <button onclick="filterResults('tracks')">Songs</button>
-          <button onclick="filterResults('albums')">Albums</button>
-          <button onclick="filterResults('artists')">Artists</button>
-          <button onclick="filterResults('playlists')">Playlists</button>
-      </div>
-        <button id="loginWithSpotify">Đăng nhập với Spotify</button>
-        <div class="profile" id="userProfile" style="display: none;">
+      
+        
+        <div class="profile" id="userProfile" >
+          <button id="loginWithSpotify">Đăng nhập với Spotify</button>
           <i class="bx bxs-bell"></i>
           <i class="bx bxs-cog"></i>
           <div class="user">
@@ -222,7 +219,7 @@
             </div>
             <div class="right">
               <h5>The Night</h5>
-              <p id="tokenTimer">Token expires in: <span id="timer">00:00:00</span></p>
+              <!-- <p id="tokenTimer">Token expires in: <span id="timer">00:00:00</span></p> -->
             </div>
           </div>
         </div>

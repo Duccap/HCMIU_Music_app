@@ -272,7 +272,7 @@ body {
 .container main .playlist .genres .items {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  
+
   gap: 10px;
 }
 
@@ -379,6 +379,23 @@ body {
 
 .container main .playlist .music-list .items .item .actions i {
   color: #919191;
+}
+
+.bx-heart,
+.bxs-heart {
+  color: #fff;
+  font-size: 14px; /* Tăng kích thước font cho trái tim */
+  transition: color 0.3s ease; /* Thêm hiệu ứng chuyển màu */
+}
+
+.playlist .music-list .items .item .actions .icon i,
+.playlist .music-list .items .item .actions .icon button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px; /* Đảm bảo kích thước font đồng đều với bx-heart */
+  color: #5773ff; /* Màu sắc của icon */
+  transition: color 0.3s ease; /* Thêm hiệu ứng chuyển màu */
 }
 
 .container .right-section {
@@ -715,8 +732,6 @@ body {
   color: #5773ff;
   padding: 16px;
   border-radius: 18px;
-  
-  
 }
 
 @media screen and (max-width: 992px) {
@@ -853,7 +868,11 @@ main-section {
   color: white;
 }
 
-.top-result, .songs, .albums, .playlists, .artists {
+.top-result,
+.songs,
+.albums,
+.playlists,
+.artists {
   margin-bottom: 20px;
 }
 
@@ -872,9 +891,6 @@ main-section {
 .search-result iframe {
   margin-top: 10px;
 }
-
-
-
 
 .results-section {
   margin-bottom: 20px;
@@ -920,8 +936,6 @@ button {
 button:hover {
   background-color: #0056b3;
 }
-
-
 
 /* #results {
   padding: 20px;
@@ -980,14 +994,13 @@ button:hover {
 
 .top-result > * {
   margin-bottom: 20px;
-  
 }
 
 .top-artist {
   display: flex;
   align-items: center;
   margin-bottom: 20px;
-  background-color:#202026;
+  background-color: #202026;
   border-radius: 10px;
   padding: 20px;
   width: 35%;
@@ -1000,43 +1013,47 @@ button:hover {
   margin-right: 20px;
 }
 
-.songs, .artists, .albums, .playlists {
+.songs,
+.artists,
+.albums,
+.playlists {
   margin-bottom: 20px;
 }
 
-.song-item, .artist-item, .album-item, .playlist-item {
+.song-item,
+.artist-item,
+.album-item,
+.playlist-item {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
 }
 
-.song-item img, .artist-item img, .album-item img, .playlist-item img {
+/* .playlist-item img,.playlist-item img, .album-item img, .artist-item img{
   width: 50px;
   height: 50px;
   border-radius: 50%;
   margin-right: 10px;
-}
+} */
 
-.song-item div, .artist-item h3, .album-item div, .playlist-item div {
+.artist-item h3,
+.album-item div,
+.playlist-item div {
   flex-grow: 1;
 }
 
-.song-item p, .album-item p, .playlist-item p {
+.song-item p,
+.album-item p,
+.playlist-item p {
   margin-left: auto;
 }
-
-
-
-
-
 
 /*sau khi click vao artist sẽ navigate đến trang của họ*/
 .artist-info {
   margin-bottom: 20px;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
   background-color: #202026;
   border-radius: 6px;
-  
 }
 
 .artist-info img {
@@ -1136,7 +1153,6 @@ button:hover {
   border: none;
   cursor: pointer;
   font-size: 1.5em;
-  
 }
 
 .song-item Button {
@@ -1146,9 +1162,6 @@ button:hover {
   font-size: 1.5em;
   margin-left: 0.5em;
 }
-
-
-
 
 .album-info {
   display: flex;
@@ -1264,11 +1277,6 @@ button:hover {
   }
 }
 
-
-
-
-
-
 /* Định dạng cho thông tin playlist */
 .playlist-info {
   display: flex;
@@ -1338,14 +1346,12 @@ button:hover {
 .progress {
   position: relative;
   width: 100%;
-  
 }
 
 .progress-bar {
   flex: 1;
   margin: 0 10px;
 }
-
 
 #result {
   position: fixed;
@@ -1376,11 +1382,9 @@ button:hover {
   right: -5em;
   top: -11em;
   /* transform: translate(0, -130%); */
-  
+
   display: none;
   transform: rotate(-90deg); /* Xoay và thu nhỏ thanh điều chỉnh */
-  
-  
 }
 
 .bx-volume-full {
@@ -1388,53 +1392,14 @@ button:hover {
   font-size: 24px;
 }
 .bx-volume-full:hover {
-  color:#007bff
+  color: #007bff;
 }
 #repeatIcon.active {
-  color:#1d1d1d; /* Màu xanh lá cây để biểu thị chế độ lặp lại đang bật */
+  color: #1d1d1d; /* Màu xanh lá cây để biểu thị chế độ lặp lại đang bật */
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .dropdown-container {
   position: relative;
-  
-  
- 
-  
-  
 }
 
 .dropdown-button {
@@ -1450,13 +1415,121 @@ button:hover {
 .dropdown-menu {
   display: none;
   position: absolute;
-  top:20px;
-  
-  background-color: white;
-  min-width: 160px;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  z-index: 1000; /* Đảm bảo dropdown menu nằm trên các phần tử khác */
-  overflow: auto; /* Đảm bảo nội dung không bị cắt */
+  top: 20px;
+  right: 0;
+  background-color: #121212;
+  min-width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  overflow: hidden;
+  padding: 10px 0;
+}
+
+.dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -10px;
+  right: 20px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent transparent #121212 transparent;
+}
+
+.dropdown-menu .dropdown-item {
+  color: #ffffff;
+  padding: 12px 20px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background-color: #333333;
+}
+
+.dropdown-menu .dropdown-item i {
+  margin-right: 10px;
+}
+
+.dropdown-menu .dropdown-item .icon {
+  margin-left: auto;
+}
+
+.dropdown-menu .dropdown-item .icon i {
+  color: #1db954;
+}
+
+.dropdown-menu .dropdown-item .icon i.checked {
+  color: #1db954;
+}
+
+.dropdown-menu .dropdown-item .icon i.unchecked {
+  color: #b3b3b3;
+}
+
+.dropdown-menu .dropdown-item input[type="checkbox"] {
+  display: none;
+}
+
+.dropdown-menu .dropdown-item input[type="checkbox"]:checked + .icon i.checked {
+  display: inline;
+}
+
+.dropdown-menu
+  .dropdown-item
+  input[type="checkbox"]:not(:checked)
+  + .icon
+  i.unchecked {
+  display: inline;
+}
+
+.dropdown-menu
+  .dropdown-item
+  input[type="checkbox"]:checked
+  + .icon
+  i.unchecked {
+  display: none;
+}
+
+.dropdown-menu
+  .dropdown-item
+  input[type="checkbox"]:not(:checked)
+  + .icon
+  i.checked {
+  display: none;
+}
+
+.dropdown-menu .search-bar {
+  padding: 10px 20px;
+  border-bottom: 1px solid #333333;
+}
+
+.dropdown-menu .search-bar input {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 4px;
+  background-color: #333333;
+  color: #ffffff;
+}
+
+.dropdown-menu .new-playlist {
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dropdown-menu .new-playlist:hover {
+  background-color: #333333;
+}
+
+.dropdown-menu .new-playlist i {
+  margin-right: 10px;
 }
 
 .dropdown-menu .dropdown-item {
@@ -1479,8 +1552,6 @@ button:hover {
   display: block;
 }
 
-
-
 .save-album-button {
   background: none;
   border: none;
@@ -1501,19 +1572,12 @@ button:hover {
   margin-right: 5px;
 }
 
-
-
-
-
-
-
 /*explore*/
 #results {
   display: flex;
   flex-wrap: wrap;
   gap: 25px;
   padding: 20px;
-  
 }
 .explore-layout {
   flex-direction: row !important; /* Set direction to row for explore layout */
@@ -1553,8 +1617,6 @@ button:hover {
   transform: scale(1.05);
 }
 
-
-
 /* CSS cho phần Recently Played */
 .recently-played-section {
   display: flex;
@@ -1563,7 +1625,8 @@ button:hover {
   padding: 20px;
 }
 
-.recently-played-item {
+.recently-played-item,
+.liked-song-item {
   background-color: #1e1e1e;
   border-radius: 10px;
   overflow: hidden;
@@ -1624,3 +1687,436 @@ button:hover {
 .recently-played-track-info button:hover {
   background-color: #1ed760;
 }
+
+#loginWithSpotify {
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 12px 24px;
+  border-radius: 15px;
+  transition:
+    background-color 0.3s,
+    transform 0.3s;
+}
+
+#loginWithSpotify:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+.filter-tags {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.filter-tags button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 1em;
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 0.3s,
+    transform 0.3s;
+}
+
+.filter-tags button:hover {
+  background-color: #1ed760;
+  transform: scale(1.05);
+}
+
+/* Hiep was here */
+
+#results > h2 {
+  padding-left: 1em;
+  margin: 0;
+}
+#results > .album-item-container,
+#results > .artist-item-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 30px;
+  padding: 1em;
+  width: 100%;
+}
+
+#results > .album-item-container > .album-item,
+#results > .artist-item-container > .artist-item {
+  display: block;
+}
+
+#results > .album-item-container > .album-item > img,
+#results > .artist-item-container > .artist-item > img {
+  width: 100%;
+  border-radius: 8px;
+  height: auto;
+}
+#results > .album-item-container > .album-item > p,
+#results > .artist-item-container > .artist-item > p {
+  margin-top: 1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* search all */
+/* HIEP WAS HERE */
+
+.artists > div,
+.albums > div,
+.playlists > div {
+  margin-top: 1em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+.artist-item,
+.album-item,
+.playlist-item {
+  display: block;
+}
+
+.artist-item > img {
+  width: 100%;
+  border-radius: 50%;
+}
+
+/* album voi playlist hinh vuong */
+.album-item > img,
+.playlist-item > img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+/*   */
+#results > .songs {
+  width: 100%;
+}
+.recently-played-item,
+.liked-song-item {
+  display: flex;
+  width: 100%;
+  margin-top: 1em;
+  justify-content: space-between;
+}
+
+.recently-played-item > .left,
+.liked-song-item > .left {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 10px;
+}
+
+.recently-played-item > .right,
+.liked-song-item > .right {
+  display: flex;
+  align-items: center;
+  text-align: right;
+  gap: 10px;
+}
+.recently-played-item > .left > img,
+.liked-song-item > .left > img {
+  width: 100px;
+  height: auto;
+  border-radius: 8px;
+}
+.songs > .song-item-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 30px;
+  padding: 1em;
+  width: 100%;
+}
+
+.songs > .song-item-container > .song-item {
+  display: block;
+}
+
+.songs > .song-item-container > .song-item > .top > img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.songs > .song-item-container > .song-item > .bottom {
+  display: flex;
+  justify-content: right;
+}
+
+.songs > .song-item-container > .song-item > .bottom > div {
+  display: flex;
+  align-items: center;
+}
+
+.songs > .song-item-container > .song-item > .top > div > h3 {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#results > .songs > .liked-song-item {
+  display: flex;
+  justify-content: space-between;
+}
+
+#results > .songs > .liked-song-item > img {
+  width: 100px;
+  height: auto;
+  border-radius: 8px;
+}
+
+.my-playlists-wrapper .playlists {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 100%;
+}
+.my-playlists-wrapper .playlists .playlist-item {
+  width: 230px;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.my-playlists-wrapper .playlists .playlist-image-container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.my-playlists-wrapper .playlists .playlist-image-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.my-playlists-wrapper .playlists .playlist-info {
+  margin-top: 10px;
+}
+.my-playlists-wrapper .playlists .playlist-info h3 {
+  font-size: 16px;
+  margin: 10px 0 5px;
+}
+.my-playlists-wrapper .playlists .playlist-info p {
+  font-size: 14px;
+  color: #666;
+}
+
+.playlist-details-wrapper {
+  padding: 20px;
+  background-color: rgba(29, 29, 29, 0.8); /* Màu nền khớp với hình ảnh nhưng không quá đậm */
+  border-radius: 8px;
+}
+
+.playlist-details-wrapper .playlist-details {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.playlist-details-wrapper .playlist-details img {
+  width: 100%;
+  max-width: 300px;
+  border-radius: 8px;
+  display: block;
+  margin: 0 auto;
+}
+
+.playlist-details-wrapper .playlist-details h2 {
+  font-size: 28px;
+  margin: 10px 0;
+  color: #ffffff;
+}
+
+.playlist-details-wrapper .playlist-details p {
+  font-size: 16px;
+  color: #666;
+  font-weight: bold;  
+  margin-bottom: 10px;
+}
+
+.playlist-details-wrapper .playlist-details .track-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.playlist-details-wrapper .playlist-details .track-list .track-item {
+  width: 200px;
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden; /* Đảm bảo nội dung không bị tràn ra ngoài */
+  background-color:#0056b3; /* Màu nền khớp với hình ảnh nhưng không quá đậm */
+  transition: background-color 0.3s ease; /* Hiệu ứng chuyển màu mượt mà */
+}
+
+.playlist-details-wrapper .playlist-details .track-list .track-item span {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #0d0202;
+  font-weight: bold;
+}
+
+
+
+
+
+
+
+
+
+.music-content-wrapper {
+  padding: 20px;
+  width: 100%;
+  max-width: 1200px;
+  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #72284d 20%, #000000 80%);
+  color: white;
+}
+
+.music-content-wrapper .music-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.music-content-wrapper .music-header h1 {
+  font-size: 48px;
+  margin: 10px 0;
+  visibility: visible;
+  width: 100%;
+  font-size: 6rem;
+  white-space: nowrap;
+  font-weight: 900;
+}
+
+.music-content-wrapper .music-header p {
+  font-size: 24px;
+  color: #ffffff;
+}
+
+ .music-content-wrapper .music-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.music-content-wrapper .music-list .music-item {
+  width: 200px;
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  background-color:#0d4045;
+  color: #000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.music-content-wrapper .music-list .music-item img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.music-content-wrapper .music-list .music-item h3 {
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+.music-content-wrapper .music-list .music-item p {
+  font-size: 14px;
+  color: #333;
+}
+
+.profile-wrapper {
+  padding: 20px;
+  background-color: #1e1e1e; /* Màu nền tối hơn */
+  color: #fff;
+  border-radius: 8px;
+  max-width: 800px;
+  margin: 0 auto;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng đổ */
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-header h1 {
+  font-size: 2.5em; /* Tăng kích thước font */
+  margin-bottom: 10px;
+  color: #1db954; /* Màu xanh lá cây sáng */
+}
+
+.profile-header p {
+  font-size: 1.5em; /* Tăng kích thước font */
+  color: #b3b3b3;
+}
+
+.profile-details {
+  background-color: #282828; /* Màu nền tối hơn */
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng đổ */
+  margin: 0 auto; /* Căn giữa card */
+}
+.profile-item{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(145deg, #6e48aa, #9d50bb);
+  border: 2px solid #fff;
+  border-radius: 15px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+}
+.profile-item {
+  background-color: #282828; /* Màu nền tối hơn */
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 300px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Thêm bóng đổ */
+  overflow: hidden; /* Đảm bảo hình ảnh không lấn ra ngoài */
+}
+
+.profile-item img {
+  border-radius: 50%;
+  width: 100%; /* Đảm bảo hình ảnh nằm gọn trong card */
+  height: auto; /* Giữ tỷ lệ hình ảnh */
+  margin-bottom: 10px;
+}
+
+.profile-item h3 {
+  font-size: 1.8em; /* Tăng kích thước font */
+  margin-bottom: 5px;
+  color: #1db954; /* Màu xanh lá cây sáng */
+}
+
+
+
+
+

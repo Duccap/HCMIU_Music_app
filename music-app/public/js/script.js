@@ -67,10 +67,10 @@ main.addEventListener("scroll", function () {
   // Kiểm tra nếu thẻ main được scroll xuống
   if (main.scrollTop > 0) {
     // Thêm class 'scrolled' vào header
-    main.header.style.position = "10vh";
+    header.classList.add('scrolled');
   } else {
     // Xóa class 'scrolled' khỏi header
-    main.header.style.top = "10vh"; // Độ dài của header, ẩn hoàn toàn
+    header.classList.remove('scrolled');
   }
 });
 
@@ -536,11 +536,9 @@ function isTokenExpired() {
 async function getSpotifyAccessToken() {
   const clientId = "1825746372a54d109f5b454536f999ab"; // ID của client
   const clientSecret = "214b213916b04801809c7e7c824bd898";
-
   const authString = btoa(`${clientId}:${clientSecret}`); // mã hóa base 64
 
   try {
-    // Thực hiện yêu cầu POST để lấy token
     const response = await fetch("https://accounts.spotify.com/api/token", {
       method: "POST",
       headers: {
@@ -549,14 +547,13 @@ async function getSpotifyAccessToken() {
       },
       body: "grant_type=client_credentials",
     });
-    // Kiểm tra phản hồi có thành công không
+
     if (!response.ok) {
       throw new Error("Failed to fetch access token");
     }
-    // Phân tích cú pháp dữ liệu JSON từ phản hồi
+
     const data = await response.json();
     accessToken = data.access_token; // Lưu access token
-    // Giả sử token hết hạn sau 3600 giây
     const now = new Date();
     tokenExpirationTime = new Date(now.getTime() + data.expires_in * 1000);
     return accessToken;
@@ -574,22 +571,29 @@ async function ensureAccessToken() {
   return accessToken;
 }
 
+// Hàm lấy user access token từ localStorage
+function getUserAccessToken() {
+  return localStorage.getItem("userAccessToken");
+}
+
 // Hàm bất đồng bộ để gọi API Spotify với access token. Xử lý trường hợp token hết hạn và gọi lại API.
-async function callSpotifyAPI(url, accessToken) {
+async function callSpotifyAPI(url) {
+  const accessToken = await ensureAccessToken(); // Đảm bảo có accessToken hợp lệ
+  const userAccessToken = getUserAccessToken(); // Lấy userAccessToken từ localStorage
+
   try {
     let response = await fetch(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${userAccessToken || accessToken}`, // Ưu tiên sử dụng userAccessToken nếu có
         "Content-Type": "application/json",
       },
     });
 
-    // Kiểm tra nếu token hết hạn và lấy mới token nếu cần
     if (response.status === 401) {
-      // Token hết hạn
+      // Token hết hạn, lấy lại accessToken mới
       accessToken = await getSpotifyAccessToken();
-      response = await callSpotifyAPI(url, accessToken); // Gọi lại API với token mới
+      response = await callSpotifyAPI(url); // Gọi lại API với token mới
     }
 
     return await response.json(); // Trả về dữ liệu JSON từ phản hồi
@@ -603,88 +607,326 @@ async function callSpotifyAPI(url, accessToken) {
 getSpotifyAccessToken().then((accessToken) => {
   if (accessToken) {
     console.log("Token was successfully retrieved:", accessToken);
-    // Bạn có thể tiếp tục sử dụng accessToken ở đây
   } else {
     console.log("Failed to retrieve access token.");
   }
 });
 
-function getUserAccessToken() {
-  return localStorage.getItem("userAccessToken");
-}
-
 // ĐĂNG NHẬP TOKEN và PROFILE //
+// document.addEventListener('DOMContentLoaded', () => {
+//   const loginButton = document.getElementById('loginWithSpotify');
+//   const userProfile = document.getElementById('userProfile');
+//   const userName = document.getElementById('userName');
+//   const timerElement = document.getElementById('timer');
+//   let tokenExpirationTime;
+
+//   // Kiểm tra trạng thái user token khi trang được tải
+//   checkUserToken();
+
+//   loginButton.addEventListener('click', async () => {
+//     const token = await getSpotifyAccessToken();
+//     if (token) {
+//       tokenExpirationTime = new Date().getTime() + token.expires_in * 1000; // Lưu thời gian hết hạn của token
+//       localStorage.setItem('spotifyToken', JSON.stringify(token));
+//       updateUIForLoggedInUser(token);
+//       startTokenExpirationTimer(token.expires_in);
+//     }
+//   });
+
+//   function checkUserToken() {
+//     const token = JSON.parse(localStorage.getItem('spotifyToken'));
+//     if (token && !isTokenExpired()) {
+//       tokenExpirationTime = new Date().getTime() + token.expires_in * 1000;
+//       updateUIForLoggedInUser(token);
+//       startTokenExpirationTimer((tokenExpirationTime - new Date().getTime()) / 1000);
+//     } else {
+//       updateUIForLoggedOutUser();
+//     }
+//   }
+
+//   function updateUIForLoggedInUser(token) {
+//     loginButton.style.display = 'none';
+//     userProfile.style.display = 'block';
+//     userName.textContent = 'User Name'; // Thay thế bằng tên người dùng thực tế
+//   }
+
+//   function updateUIForLoggedOutUser() {
+//     loginButton.style.display = 'block';
+//     userProfile.style.display = 'none';
+//     timerElement.textContent = '00:00:00';
+//   }
+
+//   function startTokenExpirationTimer(duration) {
+//     const endTime = new Date().getTime() + duration * 1000;
+//     const interval = setInterval(() => {
+//       const now = new Date().getTime();
+//       const timeLeft = endTime - now;
+
+//       if (timeLeft <= 0) {
+//         clearInterval(interval);
+//         localStorage.removeItem('spotifyToken');
+//         updateUIForLoggedOutUser();
+//         return;
+//       }
+
+//       const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+//       const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+//       const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+//       timerElement.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+//     }, 1000);
+//   }
+
+//   function pad(number) {
+//     return number < 10 ? '0' + number : number;
+//   }
+// });
+
+
+// HEADER //
+// document.addEventListener('DOMContentLoaded', () => {
+//   document.getElementById('musicLink').addEventListener('click', loadMusicContent);
+//   document.getElementById('profileLink').addEventListener('click', loadProfileContent);
+// });
+
 document.addEventListener('DOMContentLoaded', () => {
-  const loginButton = document.getElementById('loginWithSpotify');
-  const userProfile = document.getElementById('userProfile');
-  const userName = document.getElementById('userName');
-  const timerElement = document.getElementById('timer');
-  let tokenExpirationTime;
-
-  // Kiểm tra trạng thái user token khi trang được tải
-  checkUserToken();
-
-  loginButton.addEventListener('click', async () => {
-    const token = await getSpotifyAccessToken();
-    if (token) {
-      tokenExpirationTime = new Date().getTime() + token.expires_in * 1000; // Lưu thời gian hết hạn của token
-      localStorage.setItem('spotifyToken', JSON.stringify(token));
-      updateUIForLoggedInUser(token);
-      startTokenExpirationTimer(token.expires_in);
-    }
-  });
-
-  function checkUserToken() {
-    const token = JSON.parse(localStorage.getItem('spotifyToken'));
-    if (token && !isTokenExpired()) {
-      tokenExpirationTime = new Date().getTime() + token.expires_in * 1000;
-      updateUIForLoggedInUser(token);
-      startTokenExpirationTimer((tokenExpirationTime - new Date().getTime()) / 1000);
-    } else {
-      updateUIForLoggedOutUser();
-    }
-  }
-
-  function updateUIForLoggedInUser(token) {
-    loginButton.style.display = 'none';
-    userProfile.style.display = 'block';
-    userName.textContent = 'User Name'; // Thay thế bằng tên người dùng thực tế
-  }
-
-  function updateUIForLoggedOutUser() {
-    loginButton.style.display = 'block';
-    userProfile.style.display = 'none';
-    timerElement.textContent = '00:00:00';
-  }
-
-  function startTokenExpirationTimer(duration) {
-    const endTime = new Date().getTime() + duration * 1000;
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const timeLeft = endTime - now;
-
-      if (timeLeft <= 0) {
-        clearInterval(interval);
-        localStorage.removeItem('spotifyToken');
-        updateUIForLoggedOutUser();
-        return;
-      }
-
-      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-      timerElement.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-    }, 1000);
-  }
-
-  function pad(number) {
-    return number < 10 ? '0' + number : number;
-  }
+  document.getElementById('musicLink').addEventListener('click', loadMusicContent);
 });
 
+async function loadMusicContent() {
+  const mainElement = document.querySelector('main');
+  if (!mainElement) {
+    console.error('Main element not found');
+    return;
+  }
+  mainElement.innerHTML = ''; // Xóa nội dung hiện tại
 
+  // Thêm thẻ wrapper
+  const wrapperDiv = document.createElement('div');
+  wrapperDiv.className = 'music-content-wrapper';
 
+  // Gọi API của Spotify để lấy thông tin playlist
+  const playlists = await fetchSpotifyPlaylists();
+
+  // Tạo nội dung cho mục "Music"
+  const musicContent = `
+    <div class="music-header">
+      <h1>Music</h1>
+      <p>Discover new music</p>
+    </div>
+    <div class="music-list">
+      ${playlists.map(playlist => `
+        <div class="music-item" data-playlist-id="${playlist.id}">
+          <img src="${playlist.images[0].url}" alt="${playlist.name}">
+          <h3>${playlist.name}</h3>
+          <p>${playlist.description}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  wrapperDiv.innerHTML = musicContent;
+  mainElement.appendChild(wrapperDiv);
+
+  // Thêm sự kiện click cho mỗi playlist
+  document.querySelectorAll('.music-item').forEach(item => {
+    item.addEventListener('click', async () => {
+      const playlistId = item.getAttribute('data-playlist-id');
+      const playlist = await fetchPlaylistById(playlistId); // Giả sử bạn có hàm này để lấy chi tiết playlist
+      if (playlist) {
+        displayPlaylistDetails(playlist); // Gọi hàm displayPlaylistDetails
+      } else {
+        console.error('Failed to fetch playlist details');
+      }
+    });
+  });
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('profileLink').addEventListener('click', loadProfileContent);
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('profileLink').addEventListener('click', loadProfileContent);
+});
+
+async function loadProfileContent() {
+  const mainElement = document.querySelector('main');
+  if (!mainElement) {
+    console.error('Main element not found');
+    return;
+  }
+  mainElement.innerHTML = ''; // Xóa nội dung hiện tại
+
+  const userProfile = await fetchUserProfile();
+  if (!userProfile) {
+    console.error('Failed to fetch user profile');
+    return;
+  }
+
+  // Tạo nội dung cho mục "Profile"
+  const profileContent = `
+    <div class="profile-wrapper">
+      <div class="profile-header">
+        <h1>Profile</h1>
+        <p>Manage your profile and settings</p>
+      </div>
+      <div class="profile-details">
+        <div class="profile-card">
+          <img src="${userProfile.images[0]?.url || 'default-profile.png'}" alt="User Profile">
+          <h3>${userProfile.display_name}</h3>
+          <p>Email: ${userProfile.email}</p>
+          <p>Country: ${userProfile.country}</p>
+          <p>Followers: ${userProfile.followers.total}</p>
+        </div>
+        <div class="profile-card">
+          <h2>Subscription</h2>
+          <p>Plan: ${userProfile.product}</p>
+          <p>Next Billing Date: 8/1/24</p>
+          <p>Payment Method: MoMo wallet</p>
+        </div>
+        <div class="profile-card">
+          <h2>Account</h2>
+          <button>Edit Profile</button>
+          <button>Recover Playlists</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  mainElement.innerHTML = profileContent;
+}
+
+async function fetchUserProfile() {
+  const accessToken = await ensureAccessToken(); // Đảm bảo có accessToken hợp lệ
+  const url = 'https://api.spotify.com/v1/me'; // Endpoint để lấy thông tin người dùng
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user profile: ${response.status} ${response.statusText}`);
+    }
+
+    const userProfile = await response.json();
+    return userProfile;
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null; // Trả về null nếu có lỗi
+  }
+}
+async function fetchPlaylistById(playlistId) {
+  const accessToken = await ensureAccessToken(); // Đảm bảo có accessToken hợp lệ
+  const url = `https://api.spotify.com/v1/playlists/${playlistId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch playlist details: ${response.status} ${response.statusText}`);
+    }
+
+    const playlistDetails = await response.json();
+    return playlistDetails;
+  } catch (error) {
+    console.error("Error fetching playlist details:", error);
+    return null; // Trả về null nếu có lỗi
+  }
+}
+
+async function fetchSpotifyPlaylists() {
+  const accessToken = await ensureAccessToken(); // Giả sử bạn đã có hàm này để lấy accessToken
+  const url = 'https://api.spotify.com/v1/browse/featured-playlists';
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch playlists: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.playlists.items;
+  } catch (error) {
+    console.error("Error fetching playlists:", error);
+    return [];
+  }
+}
+
+async function loadProfileContent() {
+  const mainElement = document.querySelector('main');
+  if (!mainElement) {
+    console.error('Main element not found');
+    return;
+  }
+  mainElement.innerHTML = ''; // Xóa nội dung hiện tại
+
+  const userProfile = await fetchUserProfile();
+  if (!userProfile) {
+    console.error('Failed to fetch user profile');
+    return;
+  }
+
+  // Tạo nội dung cho mục "Profile"
+  const profileContent = `
+    <div class="profile-header">
+      <h1>Profile</h1>
+      <p>Manage your profile and settings</p>
+    </div>
+    <div class="profile-details">
+      <div class="profile-item">
+        <img src="${userProfile.images[0].url}" alt="User Profile">
+        <h3>${userProfile.display_name}</h3>
+        <p>Email: ${userProfile.email}</p>
+        <p>Country: ${userProfile.country}</p>
+        <p>Followers: ${userProfile.followers.total}</p>
+      </div>
+    </div>
+  `;
+
+  mainElement.innerHTML = profileContent;
+}
+async function fetchUserProfile() {
+  const accessToken = await getUserAccessToken(); // Đảm bảo có accessToken hợp lệ
+  const url = 'https://api.spotify.com/v1/me'; // Endpoint để lấy thông tin người dùng
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch user profile: ${response.status} ${response.statusText}`);
+    }
+
+    const userProfile = await response.json();
+    return userProfile;
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null; // Trả về null nếu có lỗi
+  }
+}
 
 
 
@@ -703,10 +945,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 //HOME PAGE//
 document.addEventListener("DOMContentLoaded", async () => {
-  const userAccessToken = getUserAccessToken();
+  const accessToken = await ensureAccessToken();
 
-  // Gọi API để lấy thông tin bài hát "Hello" của Adele
-  const song = await fetchSongInfo(userAccessToken, "6M6x0gdg4mn1j3m8V0d5uN");
+  // Gọi API để lấy thông tin bài hát "Attention"
+  const song = await fetchSongInfo(accessToken, "5cF0dROlMOK5uNZtivgu50"); // Đảm bảo ID này là ID của bài hát "Attention"
   if (song) {
     updateTrendingSong(song);
   } else {
@@ -717,7 +959,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 async function fetchSongInfo(accessToken, songId) {
   try {
     const response = await fetch(
-      `https://api.spotify.com/v1/tracks/5cF0dROlMOK5uNZtivgu50`,
+      `https://api.spotify.com/v1/tracks/${songId}`, // Sử dụng biến songId để truy vấn thông tin bài hát
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -737,6 +979,7 @@ async function fetchSongInfo(accessToken, songId) {
 }
 
 function updateTrendingSong(song) {
+  
   if (!song) {
     console.error("No song data to update");
     return;
@@ -755,6 +998,10 @@ function updateTrendingSong(song) {
   listenNowButton.addEventListener("click", () => {
     playTrackAndUpdateUI(song); // Gọi hàm playTrackAndUpdateUI với thông tin bài hát
   });
+  // Tạo và thêm nút "Like"
+  const likeButtonContainer = trendingDiv.querySelector(".like-button-container");
+  addLikeButton(song, likeButtonContainer); // Gọi hàm addLikeButton
+
 }
 
 
@@ -764,7 +1011,7 @@ function updateTrendingSong(song) {
 //   displayGenres(genres);
 // });
 async function fetchGenres() {
-  const accessToken = await getUserAccessToken(); // Giả sử bạn đã có hàm này để lấy accessToken
+  const accessToken = await ensureAccessToken(); // Giả sử bạn đã có hàm này để lấy accessToken
   const url = 'https://api.spotify.com/v1/browse/categories';
 
   try {
@@ -843,6 +1090,10 @@ async function displayPlaylistDetails(playlist) {
   const mainElement = document.querySelector('main');
   mainElement.innerHTML = ''; // Xóa nội dung hiện tại
 
+  // Thêm thẻ wrapper
+  const wrapperDiv = document.createElement('div');
+  wrapperDiv.className = 'playlist-details-wrapper';
+
   // Hiển thị thông tin chi tiết của playlist
   const playlistDetails = document.createElement('div');
   playlistDetails.className = 'playlist-details';
@@ -851,7 +1102,7 @@ async function displayPlaylistDetails(playlist) {
     <h2>${playlist.name}</h2>
     <p>By ${playlist.owner.display_name} • ${playlist.tracks.total} songs</p>
   `;
-  mainElement.appendChild(playlistDetails);
+  wrapperDiv.appendChild(playlistDetails);
 
   // Kiểm tra xem playlist đã được lưu chưa và cập nhật nút "Save Playlist"
   const isPlaylistSaved = await checkIfPlaylistSaved(playlist.id);
@@ -880,13 +1131,37 @@ async function displayPlaylistDetails(playlist) {
       currentTrackIndex = index; // Cập nhật chỉ số bài hát hiện tại
       playTrackAndUpdateUI(track);
     });
+
+    const rgbColor = getRandomRGBValue();
+    trackDiv.addEventListener('mouseover', () => {
+      setRandomBackgroundColor(trackDiv, rgbColor);
+    });
+    trackDiv.addEventListener('mouseleave', () => {
+      resetBackgroundColor(trackDiv);
+    });
+
     trackList.appendChild(trackDiv);
   });
-  mainElement.appendChild(trackList);
+  wrapperDiv.appendChild(trackList);
+
+  mainElement.appendChild(wrapperDiv);
 
   // Gắn sự kiện cho các nút Previous và Next
   document.getElementById('previousIcon').addEventListener('click', playPreviousTrack);
   document.getElementById('nextIcon').addEventListener('click', playNextTrack);
+}
+
+function getRandomRGBValue() {
+  const colors = ['#476a8a', '#a69984', '#a24c34', '#0d4045', '#a67894', '#5547a5'];
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+function setRandomBackgroundColor(element, color) {
+  element.style.backgroundColor = color;
+}
+
+function resetBackgroundColor(element) {
+  element.style.backgroundColor = '';
 }
 
 function playTrackAndUpdateUI(track) {
@@ -986,66 +1261,73 @@ async function displayArtistsTopTracks(artistId) {
   const topTracks = await fetchArtistsTopTracks(artistId);
   const topTracksContainer = document.querySelector('.music-list .items');
 
+  if (!topTracksContainer) {
+    console.error("Top songs container not found in the DOM");
+    return;
+  }
+
   topTracksContainer.innerHTML = ''; // Xóa các mục hiện tại
 
-  for (const track of topTracks) {
-    const isLiked = await checkIfLiked(track.id); // Kiểm tra trạng thái yêu thích từ API
+  topTracks.forEach((track, index) => {
     const trackDiv = document.createElement('div');
     trackDiv.className = 'item';
     trackDiv.innerHTML = `
       <div class="info">
-        <img src="${track.album.images[0].url}" alt="${track.name}">
+        <p>${index + 1}</p>
+        <img src="${track.album.images[0].url}" alt="${track.name}" />
         <div class="details">
           <h5>${track.name}</h5>
           <p>${track.artists.map(artist => artist.name).join(', ')}</p>
         </div>
       </div>
-      <div class="actions">
-        <p>${formatDuration(track.duration_ms)}</p>
-        <div class="icon">
-          <i class="bx bxs-right-arrow"></i>
-        </div>
-        <i class="${isLiked ? 'bx bxs-heart' : 'bx bx-heart'}"></i>
-      </div>
+     
     `;
+    const action = document.createElement("div")
+    action.classList.add("actions")
+    action.innerHTML = `
+    <p>${formatDuration(track.duration_ms)}</p>
+    <div class="icon">
+      <i class="bx bxs-right-arrow play-button" data-track-uri="${track.uri}"></i>
+    </div>
+    `
+    addLikeButton(track, action);
+    trackDiv.appendChild(action)
     topTracksContainer.appendChild(trackDiv);
 
-    // Thêm sự kiện onclick vào icon phát nhạc
-    const playIcon = trackDiv.querySelector('.icon .bx.bxs-right-arrow');
-    playIcon.onclick = () => playTrackAndUpdateUI(track);
+    // Thêm nút like sử dụng hàm addLikeButton
 
-    // Thêm sự kiện onclick vào icon trái tim
-    const likeIcon = trackDiv.querySelector('.bx.bxs-heart, .bx.bx-heart');
-    likeIcon.onclick = async () => {
-      const newLikedStatus = !isLiked;
-      await toggleLikeStatus(track.id, newLikedStatus);
-      likeIcon.className = newLikedStatus ? 'bx bxs-heart' : 'bx bx-heart';
-    };
-  }
+    
+  });
+  
+  // Thêm sự kiện onclick vào nt phát nhạc
+  document.querySelectorAll('.play-button').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+      const trackUri = event.target.getAttribute('data-track-uri');
+      const track = topTracks.find(t => t.uri === trackUri);
+      await playTrackAndUpdateUI(track);
+
+      // Thay đổi trạng thái nút play thành pause
+      document.querySelectorAll('.play-button').forEach(btn => {
+        if (btn.getAttribute('data-track-uri') === trackUri) {
+          btn.classList.remove('bxs-right-arrow');
+          btn.classList.add('bxs-pause');
+        } else {
+          btn.classList.remove('bxs-pause');
+          btn.classList.add('bxs-right-arrow');
+        }
+      });
+    });
+  });
 }
 
-async function checkIfLiked(trackId) {
-  try {
-    const response = await fetch(`/api/tracks/${trackId}/like`, { method: 'GET' });
-    if (!response.ok) throw new Error('Failed to check like status');
-    const data = await response.json();
-    return data.isLiked;
-  } catch (error) {
-    console.error('Error checking like status:', error);
-    return false;
-  }
-}
+// Gọi hàm để hiển thị top songs khi trang được tải
+document.addEventListener('DOMContentLoaded', () => {
+  const artistId = '4dpARuHxo51G3z768sgnrY'; // ID của nghệ sĩ
+  displayArtistsTopTracks(artistId);
+});
 
-async function toggleLikeStatus(trackId, likeStatus) {
-  try {
-    const method = likeStatus ? 'POST' : 'DELETE';
-    const response = await fetch(`/api/tracks/${trackId}/like`, { method: method });
-    if (!response.ok) throw new Error('Failed to toggle like status');
-    console.log(`Like status for track ${trackId} toggled to ${likeStatus}`);
-  } catch (error) {
-    console.error('Error toggling like status:', error);
-  }
-}
+
+
 
 function formatDuration(durationMs) {
   const minutes = Math.floor(durationMs / 60000);
@@ -1160,140 +1442,23 @@ function createIframe(item, type) {
 
   return iframe;
 }
+//randomize sắc màu
+function getRandomRGBValue() {
+  const red =  Math.floor(Math.random() * 256);
+  const green =  Math.floor(Math.random() * 256);
+  const blue = Math.floor(Math.random() * 256);
+  return`rgb(${red}, ${green}, ${blue})`;
+}
+//này trả về string chứa mã màu rgb  ví dụ "rgb(255, 255, 255)"
 
-function displayAllResults(data) {
-  const resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = ""; // Clear previous results
-
-  // Top result
-  if (data.artists && data.artists.items.length > 0) {
-    const topArtist = data.artists.items[0];
-    const topResultDiv = document.createElement("div");
-    topResultDiv.classList.add("top-result");
-    topResultDiv.innerHTML = `
-      <h2>Top result</h2>
-      <div class="top-artist" data-id="${topArtist.id}">
-        <img src="${topArtist.images && topArtist.images[0] ? topArtist.images[0].url : "default-image-url"}" alt="${topArtist.name}">
-        <div>
-          <h3>${topArtist.name}</h3>
-          <p>Artist</p>
-        </div>
-      </div>
-    `;
-    resultsDiv.appendChild(topResultDiv);
-
-    // Add click event for top result
-    topResultDiv.querySelector(".top-artist").addEventListener("click", () => {
-      navigateToArtist(topArtist.id);
-    });
-  }
-
-  // Songs
-  if (data.tracks && data.tracks.items.length > 0) {
-    const songsDiv = document.createElement("div");
-    songsDiv.classList.add("songs");
-    songsDiv.innerHTML = "<h2>Songs</h2>";
-    data.tracks.items.forEach((track) => {
-      const songItem = document.createElement("div");
-      songItem.classList.add("song-item");
-      songItem.innerHTML = `
-        <img src="${track.album.images && track.album.images[0] ? track.album.images[0].url : "default-image-url"}" alt="${track.name}">
-        <div>
-          <h3>${track.name}</h3>
-          <p>${track.artists.map((artist) => artist.name).join(", ")}</p>
-        </div>
-        <p>${formatDuration(track.duration_ms)}</p>
-      `;
-      addLikeButton(track, songItem);
-      addPlaylistDropdown(track, songItem);
-      songsDiv.appendChild(songItem);
-
-      // Add click event for song
-      songItem.addEventListener("click", () => {
-        playTrackAndUpdateUI(track);
-      });
-    });
-    resultsDiv.appendChild(songsDiv);
-  }
-
-  // Artists
-  if (data.artists && data.artists.items.length > 0) {
-    const artistsDiv = document.createElement("div");
-    artistsDiv.classList.add("artists");
-    artistsDiv.innerHTML = "<h2>Artists</h2>";
-    data.artists.items.forEach((artist) => {
-      const artistItem = document.createElement("div");
-      artistItem.classList.add("artist-item");
-      artistItem.innerHTML = `
-        <img src="${artist.images && artist.images[0] ? artist.images[0].url : "default-image-url"}" alt="${artist.name}">
-        <h3>${artist.name}</h3>
-      `;
-      artistsDiv.appendChild(artistItem);
-
-      // Add click event for artist
-      artistItem.addEventListener("click", () => {
-        displayArtistInfo(artist);
-      });
-    });
-    resultsDiv.appendChild(artistsDiv);
-  }
-
-  // Albums
-  if (data.albums && data.albums.items.length > 0) {
-    const albumsDiv = document.createElement("div");
-    albumsDiv.classList.add("albums");
-    albumsDiv.innerHTML = "<h2>Albums</h2>";
-    data.albums.items.forEach((album) => {
-      const albumItem = document.createElement("div");
-      albumItem.classList.add("album-item");
-      albumItem.innerHTML = `
-        <img src="${album.images && album.images[0] ? album.images[0].url : "default-image-url"}" alt="${album.name}">
-        <div>
-          <h3>${album.name}</h3>
-          <p>${album.artists.map((artist) => artist.name).join(", ")}</p>
-        </div>
-      `;
-      albumsDiv.appendChild(albumItem);
-
-      // Add click event for album
-      albumItem.addEventListener("click", () => {
-        displayAlbumInfo(album.id);
-      });
-    });
-    resultsDiv.appendChild(albumsDiv);
-  }
-
-  // Playlists
-  if (data.playlists && data.playlists.items.length > 0) {
-    const playlistsDiv = document.createElement("div");
-    playlistsDiv.classList.add("playlists");
-    playlistsDiv.innerHTML = "<h2>Playlists</h2>";
-    data.playlists.items.forEach((playlist) => {
-      const playlistItem = document.createElement("div");
-      playlistItem.classList.add("playlist-item");
-      playlistItem.innerHTML = `
-        <img src="${playlist.images && playlist.images[0] ? playlist.images[0].url : "default-image-url"}" alt="${playlist.name}">
-        <div>
-          <h3>${playlist.name}</h3>
-          <p>By ${playlist.owner.display_name}</p>
-        </div>
-      `;
-      playlistsDiv.appendChild(playlistItem);
-
-      // Add click event for playlist
-      playlistItem.addEventListener("click", () => {
-        displayPlaylistInfo(playlist.id);
-      });
-    });
-    resultsDiv.appendChild(playlistsDiv);
-  }
+function setRandomBackgroundColor(element, rgbColor) { 
+  element.style.backgroundColor = rgbColor;
+}
+function resetBackgroundColor(element) {
+element.style.backgroundColor = 'transparent';
 }
 
-function formatDuration(ms) {
-  const minutes = Math.floor(ms / 60000);
-  const seconds = ((ms % 60000) / 1000).toFixed(0);
-  return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-}
+
 
 function filterResults(type) {
   const resultsDiv = document.getElementById("results");
@@ -1338,11 +1503,315 @@ async function navigateToArtist(artistId) {
     console.error("Error fetching artist:", error);
   }
 }
+function displayAllResults(data) {
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = ""; // Clear previous results
 
-// sau khi search all client muốn xem thông tin của albums
-let currentTrackIndex = 0;
-let currentTrackList = [];
-let currentListType = ""; // 'album', 'artist', hoặc 'playlist'
+  // Top result
+  if (data.artists && data.artists.items.length > 0) {
+    const topArtist = data.artists.items[0];
+    const topResultDiv = document.createElement("div");
+    topResultDiv.classList.add("top-result");
+    topResultDiv.innerHTML = `
+      <h2>Top result</h2>
+      <div class="top-artist" data-id="${topArtist.id}">
+        <img src="${topArtist.images && topArtist.images[0] ? topArtist.images[0].url : "default-image-url"}" alt="${topArtist.name}">
+        <div>
+          <h3>${topArtist.name}</h3>
+          <p>Artist</p>
+        </div>
+      </div>
+    `;
+    resultsDiv.appendChild(topResultDiv);
+
+    // Add click event for top result
+    topResultDiv.querySelector(".top-artist").addEventListener("click", () => {
+      navigateToArtist(topArtist.id);
+    });
+  }
+
+  // Songs
+  if (data.tracks && data.tracks.items.length > 0) {
+    const songsDiv = document.createElement("div");
+    songsDiv.classList.add("songs");
+    songsDiv.innerHTML = "<h2>Songs</h2>";
+    const songItemContainer = document.createElement("div");
+    songItemContainer.classList.add("song-item-container");
+    data.tracks.items.forEach((track) => {
+      const songItem = document.createElement("div");
+      songItem.classList.add("song-item");
+      songItem.style="padding:1em;border-radius:10px;"
+      //random ra màu
+      const rgbColor = getRandomRGBValue()
+      // set hover thì cài background-color cho element đó
+      songItem.addEventListener('mouseover', (e)=>{setRandomBackgroundColor(songItem, rgbColor)});
+      songItem.addEventListener('mouseleave', (e)=>{resetBackgroundColor(songItem)});
+      songItem.innerHTML = `
+      <div class="top">
+          <img src="${track.album.images && track.album.images[0] ? track.album.images[0].url : "default-image-url"}" alt="${track.name}">
+          <div>
+            <h3>${track.name}</h3>
+            <p>${track.artists.map((artist) => artist.name).join(", ")}</p>
+          </div>
+          </div>
+        
+      `;
+      const right = document.createElement("div");
+      right.classList.add("bottom");
+      
+      right.innerHTML = `
+      <div>
+        <p>${formatDuration(track.duration_ms)}</p>
+        </div>
+      `;
+      songItem.appendChild(right);
+      addLikeButton(track,right);
+      addPlaylistDropdown(track, right);
+      songItem.appendChild(right);
+      songItemContainer.appendChild(songItem);
+
+      // Add click event for song
+      songItem.addEventListener("click", () => {
+        playTrackAndUpdateUI(track);
+      });
+    });
+    songsDiv.appendChild(songItemContainer);
+    resultsDiv.appendChild(songsDiv);
+  }
+
+  // Artists
+  if (data.artists && data.artists.items.length > 0) {
+    const artistsDiv = document.createElement("div");
+    artistsDiv.classList.add("artists");
+    artistsDiv.innerHTML = "<h2>Artists</h2>";
+
+    const artistContainer = document.createElement("div")
+    
+    data.artists.items.forEach((artist) => {
+      const artistItem = document.createElement("div");
+      artistItem.style="padding:1em;border-radius:10px;border-top-left-radius:50%;border-top-right-radius:50%;"
+      const rgbColor = getRandomRGBValue()
+      artistItem.addEventListener('mouseover', (e)=>{setRandomBackgroundColor(artistItem, rgbColor)});
+      artistItem.addEventListener('mouseleave', (e)=>{resetBackgroundColor(artistItem)});
+
+      artistItem.classList.add("artist-item");
+      artistItem.innerHTML = `
+        <img src="${artist.images && artist.images[0] ? artist.images[0].url : "default-image-url"}" alt="${artist.name}">
+        <h3>${artist.name}</h3>
+      `;
+      artistContainer.appendChild(artistItem);
+
+      // Add click event for artist
+      artistItem.addEventListener("click", () => {
+        displayArtistInfo(artist);
+      });
+    });
+    artistsDiv.appendChild(artistContainer)
+    resultsDiv.appendChild(artistsDiv);
+  }
+
+  // Albums
+  if (data.albums && data.albums.items.length > 0) {
+    const albumsDiv = document.createElement("div");
+    albumsDiv.classList.add("albums");
+    albumsDiv.innerHTML = "<h2>Albums</h2>";
+
+    const albumContainer = document.createElement("div")
+    data.albums.items.forEach((album) => {
+      const albumItem = document.createElement("div");
+      albumItem.style="padding:1em;border-radius:10px;";
+      const rgbColor = getRandomRGBValue()
+      albumItem.addEventListener('mouseover', (e)=>{setRandomBackgroundColor(albumItem, rgbColor)});
+      albumItem.addEventListener('mouseleave', (e)=>{resetBackgroundColor(albumItem)});
+      albumItem.classList.add("album-item");
+
+      albumItem.innerHTML = `
+        <img src="${album.images && album.images[0] ? album.images[0].url : "default-image-url"}" alt="${album.name}">
+        <div>
+          <h3 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${album.name}</h3>
+          <p>${album.artists.map((artist) => artist.name).join(", ")}</p>
+        </div>
+      `;
+      albumContainer.appendChild(albumItem);
+
+      // Add click event for album
+      albumItem.addEventListener("click", () => {
+        displayAlbumInfo(album.id);
+      });
+    });
+    albumsDiv.appendChild(albumContainer)
+    resultsDiv.appendChild(albumsDiv);
+  }
+
+  // Playlists
+  if (data.playlists && data.playlists.items.length > 0) {
+    const playlistsDiv = document.createElement("div");
+    playlistsDiv.classList.add("playlists");
+    playlistsDiv.innerHTML = "<h2>Playlists</h2>";
+    const playlistContainer = document.createElement("div")
+    data.playlists.items.forEach((playlist) => {
+      const playlistItem = document.createElement("div");
+      playlistItem.style="padding:1em;border-radius:10px;"
+      const rgbColor = getRandomRGBValue()
+      playlistItem.addEventListener('mouseover', (e)=>{setRandomBackgroundColor(playlistItem, rgbColor)});
+      playlistItem.addEventListener('mouseleave', (e)=>{resetBackgroundColor(playlistItem)});
+      playlistItem.classList.add("playlist-item");
+      playlistItem.innerHTML = `
+        <img src="${playlist.images && playlist.images[0] ? playlist.images[0].url : "default-image-url"}" alt="${playlist.name}">
+        <div>
+          <h3 style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${playlist.name}</h3>
+          <p>By ${playlist.owner.display_name}</p>
+        </div>
+      `;
+      playlistContainer.appendChild(playlistItem);
+
+      // Add click event for playlist
+      playlistItem.addEventListener("click", () => {
+        displayPlaylistInfo(playlist.id);
+      });
+    });
+    playlistsDiv.appendChild(playlistContainer)
+    resultsDiv.appendChild(playlistsDiv);
+  }
+}
+
+// sau khi search all client muốn xem thông tin của nghệ sĩ
+async function displayArtistInfo(artist) {
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.innerHTML = `
+    <div class="artist-info">
+      <img src="${artist.images && artist.images[0] ? artist.images[0].url : "default-image-url"}" alt="${artist.name}">
+      <h1>${artist.name}</h1>
+      <p class="followers">${artist.followers.total.toLocaleString()} monthly listeners</p>
+      <p class="genres">${artist.genres.join(", ")}</p>
+      <button class="follow-artist-button"><i class='bx bx-plus-circle' style='color:#ffffff'></i> Follow</button>
+
+      <div class="popular-tracks">
+        <h2>Popular</h2>
+        <div id="popular-tracks"></div>
+      </div>
+    </div>
+  `;
+
+  try {
+    const accessToken = await ensureAccessToken();
+    if (!accessToken) {
+      console.error("User access token is required");
+      return;
+    }
+
+    const topTracksResponse = await fetch(
+      `https://api.spotify.com/v1/artists/${artist.id}/top-tracks?market=US`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    if (!topTracksResponse.ok) {
+      throw new Error("Failed to fetch top tracks");
+    }
+
+    const topTracksData = await topTracksResponse.json();
+
+    currentTrackList = topTracksData.tracks;
+    currentTrackIndex = 0;
+    currentListType = "artist";
+
+    const popularTracksDiv = document.getElementById("popular-tracks");
+    topTracksData.tracks.forEach((track, index) => {
+      const trackItem = document.createElement("div");
+      trackItem.classList.add("track-item");
+      trackItem.innerHTML = `
+        <div class="track-index">${index + 1}</div>
+        <img src="${track.album.images && track.album.images[0] ? track.album.images[0].url : "default-image-url"}" alt="${track.name}">
+        <div class="track-info">
+          <h3>${track.name}</h3>
+          <p>${track.artists.map((artist) => artist.name).join(", ")}</p>
+        </div>
+        <div class="track-plays">${track.popularity.toLocaleString()}</div>
+        <div class="track-duration">${formatDuration(track.duration_ms)}</div>
+      `;
+      popularTracksDiv.appendChild(trackItem);
+
+      // Add like button and playlist dropdown to each track
+      addLikeButton(track, trackItem);
+      addPlaylistDropdown(track, trackItem);
+      trackItem.addEventListener("click", () => {
+        currentTrackIndex = index; // Cập nhật bài hát hiện tại
+        playTrackAndUpdateUI(track);
+      });
+    });
+
+    // Kiểm tra trạng thái follow của nghệ sĩ
+    const userAccessToken = getUserAccessToken(); // Ensure you have this function to get userAccessToken
+    if (!userAccessToken) {
+      console.error("User access token is required for personal data");
+      return;
+    }
+    const followStatusResponse = await fetch(
+      `https://api.spotify.com/v1/me/following/contains?type=artist&ids=${artist.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${userAccessToken}`,
+        },
+      },
+    );
+
+    if (!followStatusResponse.ok) {
+      throw new Error("Failed to check follow status");
+    }
+
+    const isFollowing = await followStatusResponse.json();
+    const followButton = document.querySelector(".follow-artist-button");
+    followButton.innerHTML = `<i class='bx ${isFollowing[0] ? "bx-check-circle" : "bx-plus-circle"}' style='color:#ffffff'></i> ${isFollowing[0] ? "Following" : "Follow"}`;
+
+    // Thêm sự kiện click cho nút follow/unfollow
+    followButton.addEventListener("click", async () => {
+      const newIsFollowing = await toggleFollowArtist(
+        artist.id,
+        isFollowing[0],
+        userAccessToken,
+      );
+      followButton.innerHTML = `<i class='bx ${newIsFollowing ? "bx-check-circle" : "bx-plus-circle"}' style='color:#ffffff'></i> ${newIsFollowing ? "Following" : "Follow"}`;
+      isFollowing[0] = newIsFollowing; // Cập nhật trạng thái follow
+    });
+  } catch (error) {
+    console.error("Error fetching artist info:", error);
+  }
+}
+
+async function toggleFollowArtist(artistId, isFollowing, userAccessToken) {
+  const method = isFollowing ? "DELETE" : "PUT";
+  try {
+    const response = await fetch(
+      `https://api.spotify.com/v1/me/following?type=artist&ids=${artistId}`,
+      {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${userAccessToken}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to ${isFollowing ? "unfollow" : "follow"} artist.`,
+      );
+    }
+
+    return !isFollowing; // Trả về trạng thái mới
+  } catch (error) {
+    console.error(
+      `Error ${isFollowing ? "unfollowing" : "following"} artist:`,
+      error,
+    );
+    return isFollowing; // Trả về trạng thái cũ nếu có lỗi
+  }
+}
+
 async function displayAlbumInfo(albumId) {
   const resultsDiv = document.getElementById("results");
   resultsDiv.innerHTML = ""; // Clear previous results
@@ -1422,116 +1891,140 @@ async function displayAlbumInfo(albumId) {
     console.error("Error fetching album details:", error);
   }
 }
-
-// sau khi search all client muốn xem thông tin của nghệ sĩ
-async function displayArtistInfo(artist) {
+async function displayPlaylistInfo(playlistId) {
   const resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = `
-    <div class="artist-info">
-      <img src="${artist.images && artist.images[0] ? artist.images[0].url : "default-image-url"}" alt="${artist.name}">
-      <h1>${artist.name}</h1>
-      <p class="followers">${artist.followers.total.toLocaleString()} monthly listeners</p>
-      <p class="genres">${artist.genres.join(", ")}</p>
-      <button class="follow-artist-button"><i class='bx bx-plus-circle' style='color:#ffffff'></i> Follow</button>
+  resultsDiv.innerHTML = ""; // Clear previous results
 
-      <div class="popular-tracks">
-        <h2>Popular</h2>
-        <div id="popular-tracks"></div>
-      </div>
-    </div>
-  `;
+  // Kiểm tra xem dữ liệu playlist đã được lưu trong localStorage chưa
+  const cachedPlaylist = localStorage.getItem(`playlist_${playlistId}`);
+  if (cachedPlaylist) {
+    const playlist = JSON.parse(cachedPlaylist);
+    renderPlaylistDetails(playlist);
+    return;
+  }
 
   try {
-    const userAccessToken = getUserAccessToken();
-    if (!userAccessToken) {
-      console.error("User access token is required");
-      return;
-    }
-
-    const topTracksResponse = await fetch(
-      `https://api.spotify.com/v1/artists/${artist.id}/top-tracks?market=US`,
+    const accessToken = await ensureAccessToken();
+    const response = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}`,
       {
         headers: {
-          Authorization: `Bearer ${userAccessToken}`,
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
         },
       },
     );
 
-    if (!topTracksResponse.ok) {
-      throw new Error("Failed to fetch top tracks");
+    if (!response.ok) {
+      throw new Error(`Failed to fetch playlist details: ${response.status} ${response.statusText}`);
     }
 
-    const topTracksData = await topTracksResponse.json();
+    const playlist = await response.json();
 
-    currentTrackList = topTracksData.tracks;
-    currentTrackIndex = 0;
-    currentListType = "artist";
+    // Lưu trữ dữ liệu playlist vào localStorage để sử dụng lại
+    localStorage.setItem(`playlist_${playlistId}`, JSON.stringify(playlist));
 
-    const popularTracksDiv = document.getElementById("popular-tracks");
-    topTracksData.tracks.forEach((track, index) => {
-      const trackItem = document.createElement("div");
-      trackItem.classList.add("track-item");
-      trackItem.innerHTML = `
-        <div class="track-index">${index + 1}</div>
-        <img src="${track.album.images && track.album.images[0] ? track.album.images[0].url : "default-image-url"}" alt="${track.name}">
-        <div class="track-info">
-          <h3>${track.name}</h3>
-          <p>${track.artists.map((artist) => artist.name).join(", ")}</p>
-        </div>
-        <div class="track-plays">${track.popularity.toLocaleString()}</div>
-        <div class="track-duration">${formatDuration(track.duration_ms)}</div>
-      `;
-      popularTracksDiv.appendChild(trackItem);
-
-      // Add like button and playlist dropdown to each track
-      addLikeButton(track, trackItem);
-      addPlaylistDropdown(track, trackItem);
-      trackItem.addEventListener("click", () => {
-        currentTrackIndex = index; // Cập nhật bài hát hiện tại
-        playTrackAndUpdateUI(track);
-      });
-    });
-
-    // Kiểm tra trạng thái follow của nghệ sĩ
-    const followStatusResponse = await fetch(
-      `https://api.spotify.com/v1/me/following/contains?type=artist&ids=${artist.id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${userAccessToken}`,
-        },
-      },
-    );
-
-    if (!followStatusResponse.ok) {
-      throw new Error("Failed to check follow status");
-    }
-
-    const isFollowing = await followStatusResponse.json();
-    const followButton = document.querySelector(".follow-artist-button");
-    followButton.innerHTML = `<i class='bx ${isFollowing[0] ? "bx-check-circle" : "bx-plus-circle"}' style='color:#ffffff'></i> ${isFollowing[0] ? "Following" : "Follow"}`;
-
-    // Thêm sự kiện click cho nút follow/unfollow
-    followButton.addEventListener("click", async () => {
-      const newIsFollowing = await toggleFollowArtist(
-        artist.id,
-        isFollowing[0],
-        userAccessToken,
-      );
-      followButton.innerHTML = `<i class='bx ${newIsFollowing ? "bx-check-circle" : "bx-plus-circle"}' style='color:#ffffff'></i> ${newIsFollowing ? "Following" : "Follow"}`;
-      isFollowing[0] = newIsFollowing; // Cập nhật trạng thái follow
-    });
+    renderPlaylistDetails(playlist);
   } catch (error) {
-    console.error("Error fetching artist info:", error);
+    console.error("Error fetching playlist info:", error);
   }
 }
 
-async function toggleFollowArtist(artistId, isFollowing, userAccessToken) {
-  const method = isFollowing ? "DELETE" : "PUT";
+function renderPlaylistDetails(playlist) {
+  const resultsDiv = document.getElementById("results");
+  const playlistInfoDiv = document.createElement("div");
+  playlistInfoDiv.className = "playlist-info";
+  playlistInfoDiv.innerHTML = `
+    <div class="playlist-header">
+      <img src="${playlist.images && playlist.images[0] ? playlist.images[0].url : "default-image-url"}" alt="${playlist.name}">
+      <div class="playlist-details">
+        <h1>${playlist.name}</h1>
+        <p>By ${playlist.owner.display_name}</p>
+        <p>${playlist.followers.total} likes • ${playlist.tracks.total} songs</p>
+        <button class="save-playlist-button"><i class='bx bx-plus-circle' style='color:#ffffff'></i> Save Playlist</button>
+      </div>
+    </div>
+    <div class="playlist-tracks">
+      <h2>Tracks</h2>
+      <div class="tracks-list"></div>
+    </div>
+  `;
+
+  // Append playlist info to results div
+  resultsDiv.appendChild(playlistInfoDiv);
+
+  // Save playlist info to localStorage when clicked
+  playlistInfoDiv.addEventListener('click', () => {
+    localStorage.setItem(`playlist_${playlist.id}`, JSON.stringify(playlist));
+    console.log("Playlist information saved to localStorage.");
+  });
+
+  // Handle tracks list
+  const tracksListDiv = playlistInfoDiv.querySelector(".tracks-list");
+  playlist.tracks.items.forEach((item, index) => {
+    const track = item.track;
+    const trackItem = document.createElement("div");
+    trackItem.className = "track-item";
+    trackItem.innerHTML = `
+      <div class="track-index">${index + 1}</div>
+      <div class="track-info">
+        <div class="track-title">${track.name}</div>
+        <div class="track-artists">${track.artists.map((artist) => artist.name).join(", ")}</div>
+        <div class="track-duration">${formatDuration(track.duration_ms)}</div>
+      </div>
+    `;
+
+    // Append track item to tracks list
+    tracksListDiv.appendChild(trackItem);
+
+    // Add like button and playlist dropdown to each track
+    addLikeButton(track, trackItem);
+    addPlaylistDropdown(track, trackItem);
+
+    // Add click event to play track and update UI
+    trackItem.addEventListener("click", () => {
+      playTrackAndUpdateUI(track);
+    });
+  });
+
+  // Check if playlist is saved and update button text
+  const saveButton = playlistInfoDiv.querySelector('.save-playlist-button');
+  const userAccessToken = getUserAccessToken(); // Get user access token
+  checkIfPlaylistSaved(playlist.id, userAccessToken).then(isSaved => {
+    if (isSaved) {
+      saveButton.innerHTML = "<i class='bx bx-minus-circle' style='color:#ffffff'></i> Unsave Playlist";
+    } else {
+      saveButton.innerHTML = "<i class='bx bx-plus-circle' style='color:#ffffff'></i> Save Playlist";
+    }
+  });
+
+  // Add click event to save/unsave playlist
+  saveButton.addEventListener('click', () => {
+    checkIfPlaylistSaved(playlist.id, userAccessToken).then(isSaved => {
+      if (isSaved) {
+        removeFromSavedPlaylists(playlist.id, userAccessToken).then(() => {
+          saveButton.innerHTML = "<i class='bx bx-plus-circle' style='color:#ffffff'></i> Save Playlist";
+          alert("Playlist removed from your library.");
+        });
+      } else {
+        addToSavedPlaylists(playlist.id, userAccessToken).then(() => {
+          saveButton.innerHTML = "<i class='bx bx-minus-circle' style='color:#ffffff'></i> Unsave Playlist";
+          alert("Playlist added to your library.");
+        });
+      }
+    });
+  });
+}
+async function checkIfPlaylistSaved(playlistId, userAccessToken) {
+  if (!userAccessToken) {
+    console.error("User access token is required to check if playlist is saved");
+    return false;
+  }
+
   try {
     const response = await fetch(
-      `https://api.spotify.com/v1/me/following?type=artist&ids=${artistId}`,
+      `https://api.spotify.com/v1/me/playlists`,
       {
-        method: method,
         headers: {
           Authorization: `Bearer ${userAccessToken}`,
           "Content-Type": "application/json",
@@ -1540,141 +2033,12 @@ async function toggleFollowArtist(artistId, isFollowing, userAccessToken) {
     );
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to ${isFollowing ? "unfollow" : "follow"} artist.`,
-      );
-    }
-
-    return !isFollowing; // Trả về trạng thái mới
-  } catch (error) {
-    console.error(
-      `Error ${isFollowing ? "unfollowing" : "following"} artist:`,
-      error,
-    );
-    return isFollowing; // Trả về trạng thái cũ nếu có lỗi
-  }
-}
-
-async function displayPlaylistInfo(playlistId) {
-  const userAccessToken = getUserAccessToken();
-  const resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = ""; // Clear previous results
-
-  try {
-    const response = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${userAccessToken}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch playlist details");
-    }
-
-    const playlist = await response.json();
-
-    // Lưu trữ danh sách các bài hát trong playlist
-    currentTrackList = playlist.tracks.items;
-    currentTrackIndex = 0;
-    currentListType = "playlist";
-
-    // Create playlist info HTML
-    const playlistInfoDiv = document.createElement("div");
-    playlistInfoDiv.className = "playlist-info";
-    playlistInfoDiv.innerHTML = `
-      <div class="playlist-header">
-        <img src="${playlist.images && playlist.images[0] ? playlist.images[0].url : "default-image-url"}" alt="${playlist.name}">
-        <div class="playlist-details">
-          <h1>${playlist.name}</h1>
-          <p>By ${playlist.owner.display_name}</p>
-          <p>${playlist.followers.total} likes • ${playlist.tracks.total} songs, about ${formatDuration(playlist.tracks.items.reduce((acc, item) => acc + item.track.duration_ms, 0))}</p>
-          <button class="save-playlist-button"><i class='bx bx-plus-circle' style='color:#ffffff'></i> Save Playlist</button>
-          </div>
-      </div>
-      <div class="playlist-tracks">
-        <h2>Tracks</h2>
-        <div class="tracks-list"></div>
-      </div>
-    `;
-
-    // Append playlist info to results div
-    resultsDiv.appendChild(playlistInfoDiv);
-
-    // Check if the playlist is saved and update button text
-    let isPlaylistSaved = await checkIfPlaylistSaved(
-      playlistId,
-      userAccessToken,
-    );
-    const saveButton = playlistInfoDiv.querySelector(".save-playlist-button");
-    saveButton.innerHTML = isPlaylistSaved
-      ? "<i class='bx bx-check-circle' style='color:#ffffff'></i> Unsave Playlist"
-      : "<i class='bx bx-plus-circle' style='color:#ffffff'></i> Save Playlist";
-
-    // Add save playlist button functionality
-    saveButton.addEventListener("click", async () => {
-      if (isPlaylistSaved) {
-        await removeFromSavedPlaylists(playlistId, userAccessToken);
-      } else {
-        await addToSavedPlaylists(playlistId, userAccessToken);
-      }
-      isPlaylistSaved = !isPlaylistSaved;
-      saveButton.innerHTML = isPlaylistSaved
-        ? "<i class='bx bx-check-circle' style='color:#ffffff'></i> Unsave Playlist"
-        : "<i class='bx bx-plus-circle' style='color:#ffffff'></i> Save Playlist";
-    });
-
-    // Create tracks list
-    const tracksListDiv = playlistInfoDiv.querySelector(".tracks-list");
-    playlist.tracks.items.forEach((item, index) => {
-      const track = item.track;
-      const trackItem = document.createElement("div");
-      trackItem.className = "track-item";
-      trackItem.innerHTML = `
-        <div class="track-index">${index + 1}</div>
-        <div class="track-info">
-          <div class="track-title">${track.name}</div>
-          <div class="track-artists">${track.artists.map((artist) => artist.name).join(", ")}</div>
-          <div class="track-duration">${formatDuration(track.duration_ms)}</div>
-        </div>
-      `;
-
-      // Append track item to tracks list
-      tracksListDiv.appendChild(trackItem);
-
-      // Add like button and playlist dropdown to each track
-      addLikeButton(track, trackItem);
-      addPlaylistDropdown(track, trackItem);
-
-      // Add click event to play track and update UI
-      trackItem.addEventListener("click", () => {
-        currentTrackIndex = index; // Cập nhật bài hát hiện tại
-        playTrackAndUpdateUI(track);
-      });
-    });
-  } catch (error) {
-    console.error("Error fetching playlist info:", error);
-  }
-}
-async function checkIfPlaylistSaved(playlistId, userAccessToken) {
-  try {
-    const response = await fetch(
-      `https://api.spotify.com/v1/me/playlists/contains?ids=${playlistId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${userAccessToken}`,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to check playlist saved status");
+      throw new Error(`Failed to fetch user's playlists: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
-    return data[0]; // Assuming the API returns an array of booleans
+    const isSaved = data.items.some(playlist => playlist.id === playlistId);
+    return isSaved;
   } catch (error) {
     console.error("Error checking if playlist is saved:", error);
     return false; // Assume not saved if there's an error
@@ -1682,17 +2046,12 @@ async function checkIfPlaylistSaved(playlistId, userAccessToken) {
 }
 async function addToSavedPlaylists(playlistId, userAccessToken) {
   try {
-    const response = await fetch(`https://api.spotify.com/v1/me/playlists`, {
-      method: "POST",
+    const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/followers`, {
+      method: "PUT",
       headers: {
         Authorization: `Bearer ${userAccessToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        name: "New Playlist",
-        description: "Created via API",
-        public: false,
-      }),
     });
 
     if (!response.ok) {
@@ -1704,6 +2063,7 @@ async function addToSavedPlaylists(playlistId, userAccessToken) {
     console.error("Error saving playlist:", error);
   }
 }
+
 async function removeFromSavedPlaylists(playlistId, userAccessToken) {
   try {
     const response = await fetch(
@@ -1725,6 +2085,7 @@ async function removeFromSavedPlaylists(playlistId, userAccessToken) {
     console.error("Error unsaving playlist:", error);
   }
 }
+
 
 async function checkUserSavedTracks(trackIds) {
   const userAccessToken = getUserAccessToken();
@@ -1831,6 +2192,7 @@ document.querySelectorAll(".like-button").forEach((button) => {
 // Dùng lại hàm này rất nhiều lần để áp dụng cho tất cả các track
 function addLikeButton(track, trackElement) {
   const likeButton = document.createElement("button");
+  likeButton.style="border:none;background-color:transparent;"
   const likeIcon = document.createElement("i");
   likeIcon.className = "bx bxs-heart"; // Mặc định là chưa được like
   likeButton.appendChild(likeIcon);
@@ -2436,7 +2798,7 @@ let isPlaying = false;
 let isCustomEnabled = false;
 let isLyricsVisible = false;
 
-// Hàm để phát bài hát và cập nhật UI
+// Hàm để phát bài hát và cập nhật UI !!!!!!!!!!!!!!!!1
 async function playTrackAndUpdateUI(track) {
   await playTrack(track.uri);
   updatePlayerUI(track.id);
@@ -2487,20 +2849,14 @@ async function loadSectionData(section) {
     case 'favourites':
       url = `https://api.spotify.com/v1/me/tracks`;
       break;
-    case 'local':
-      // URL cho local music (nếu có)
+    case 'Best of 2023':
+      url = `https://api.spotify.com/v1/playlists/57EG9lWmdn7HHofXuQVsow`;
       break;
-    case 'create-new':
-      // URL cho create new playlist (nếu có)
+    case 'Best of 2022':
+      url = `https://api.spotify.com/v1/playlists/37i9dQZF1DX7DJr8fImN7B`;
       break;
-    case 'best-of-2023':
-      url = `https://api.spotify.com/v1/playlists/5j0o3XQ1YciVzm7MtcFmfG`;
-      break;
-    case 'best-of-2024':
-      url = `https://api.spotify.com/v1/playlists/0aiBKNSqiPnhtcw1QlXK5s`; // Thay {playlist_id_best_of_2024} bằng ID của playlist "Best of 2024"
-      break;
-    case 'adele':
-      url = `https://api.spotify.com/v1/playlists/37i9dQZF1DWTwnEm1IYyoj`;
+      case 'my-playlists':
+      url = `https://api.spotify.com/v1/me/playlists`;
       break;
     default:
       console.error("Unknown section:", section);
@@ -2529,46 +2885,28 @@ async function loadSectionData(section) {
   }
 }
 
-// function displaySectionData(data, section) {
-//   const resultsDiv = document.getElementById("results");
-//   resultsDiv.innerHTML = ""; // Clear previous results
 
-//   if (section === 'explore') {
-//     const categories = [
-//       { name: 'Music', color: '#ff4b4b' },
-//       { name: 'Podcasts', color: '#4bff4b' },
-//       { name: 'Live Events', color: '#4b4bff' },
-//       { name: 'Made For You', color: '#ff4bff' },
-//       { name: 'New Releases', color: '#4bffff' },
-//       { name: 'Vietnamese', color: '#ffff4b' }
-//     ];
-
-//     categories.forEach(category => {
-//       const categoryItem = document.createElement('div');
-//       categoryItem.className = 'category-item';
-//       categoryItem.style.backgroundColor = category.color;
-//       categoryItem.innerHTML = `
-//         <p>${category.name}</p>
-//       `;
-//       resultsDiv.appendChild(categoryItem);
-//     });
-//   }
-// }
 
 function displaySectionData(data, section) {
   const resultsDiv = document.getElementById("results");
-  resultsDiv.innerHTML = ""; // Clear previous results
+  resultsDiv.innerHTML = ""; // Xóa kết quả trước
 
-  if (section === 'explore' || section === 'genres' || section === 'made-for-you' || section === 'albums' || section === 'artists' || section === 'recents'|| section === 'favourites') {
-    resultsDiv.classList.add('explore-layout'); // Add specific class for layout
+  if (section === 'explore' || section === 'genres' || section === 'made-for-you' || section === 'albums' || section === 'artists' || section === 'recents' || section === 'favourites' || section === 'Best of 2023' || section === 'Best of 2022' || section === 'my-playlists') {
+    resultsDiv.classList.add('explore-layout'); // Thêm class cho layout
 
     // Thêm header
     const header = document.createElement('h2');
-    header.textContent = section === 'explore' ? "New Releases" : (section === 'genres' ? "Genres" : (section === 'made-for-you' ? "Made For You" : (section === 'albums' ? "My Albums" : (section === 'artists' ? "My Artists" : "Recently Played"))));
+    header.textContent = section === 'explore' ? "New Releases" : (section === 'genres' ? "Genres" : (section === 'made-for-you' ? "Made For You" : (section === 'albums' ? "My Albums" : (section === 'artists' ? "My Artists" : (section === 'recents' ? "Recently Played" : (section === 'favourites' ? "Favourites" : (section === 'Best of 2023' ? "Best of 2023" : (section === 'Best of 2022' ? "Best of 2022" : (section === 'my-playlists' ? "My Playlists" : "")))))))));
     header.className = 'section-header';
     resultsDiv.appendChild(header);
 
-    if (section === 'albums') {
+    if (section === 'Best of 2023') {
+      displayPlaylistInfo('57EG9lWmdn7HHofXuQVsow'); // ID của playlist "Best of 2023"
+    } else if (section === 'Best of 2022') {
+      displayPlaylistInfo('37i9dQZF1DX7DJr8fImN7B'); // ID của playlist "Best of 2022"
+    } else if (section === 'my-playlists') {
+      displayMyPlaylists(data.items);
+    } else if (section === 'albums') {
       displaySavedAlbums(data);
     } else if (section === 'artists') {
       displayFollowedArtists(data.artists.items);
@@ -2600,9 +2938,66 @@ function displaySectionData(data, section) {
       });
     }
   } else {
-    resultsDiv.classList.remove('explore-layout'); // Remove specific class if not applicable
+    resultsDiv.classList.remove('explore-layout'); // Xóa class nếu không áp dụng
   }
 }
+
+function displayMyPlaylists(playlists) {
+  const resultsDiv = document.getElementById("results");
+  resultsDiv.classList.add('my-playlists-section'); // Thêm class cho phần my playlists
+  resultsDiv.innerHTML = '<h2>My Playlists</h2>';
+
+  const wrapperDiv = document.createElement("div");
+  wrapperDiv.classList.add("my-playlists-wrapper");
+
+  const playlistsDiv = document.createElement("div");
+  playlistsDiv.classList.add("playlists");
+
+  playlists.forEach(playlist => {
+    const playlistItem = document.createElement("div");
+    playlistItem.classList.add("playlist-item");
+    const rgbColor = getRandomRGBValue();
+    playlistItem.innerHTML = `
+      <div class="playlist-image-container">
+        <img src="${playlist.images[0]?.url || 'default-image-url.jpg'}" alt="${playlist.name}">
+      </div>
+      <div class="playlist-info">
+        <h3>${playlist.name}</h3>
+        <p>${playlist.description || 'No description available'}</p>
+      </div>
+    `;
+    playlistItem.addEventListener('click', () => {
+      displayPlaylistInfo(playlist.id);
+    });
+    playlistItem.addEventListener('mouseover', () => {
+      setRandomBackgroundColor(playlistItem, rgbColor);
+    });
+    playlistItem.addEventListener('mouseleave', () => {
+      resetBackgroundColor(playlistItem);
+    });
+    playlistsDiv.appendChild(playlistItem);
+  });
+
+  wrapperDiv.appendChild(playlistsDiv);
+  resultsDiv.appendChild(wrapperDiv);
+}
+
+function getRandomRGBValue() {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+function setRandomBackgroundColor(element, color) {
+  element.style.backgroundColor = color;
+}
+
+function resetBackgroundColor(element) {
+  element.style.backgroundColor = '';
+}
+
+
 function displayLikedSongs(items) {
   const resultsDiv = document.getElementById("results");
   resultsDiv.classList.add('liked-songs-section'); // Thêm class cho phần liked songs
@@ -2616,15 +3011,23 @@ function displayLikedSongs(items) {
     const songItem = document.createElement("div");
     songItem.classList.add("liked-song-item");
     songItem.innerHTML = `
+    <div class="left">
       <img src="${track.album.images[0] ? track.album.images[0].url : "default-image-url"}" alt="${track.name}">
-      <div>
+      <div style="display:flex;flex-direction:column;justify-content:center;align-items:left;">
         <h3>${track.name}</h3>
         <p>${track.artists.map((artist) => artist.name).join(", ")}</p>
       </div>
-      <p>${formatDuration(track.duration_ms)}</p>
+      
+      </div>
     `;
-    addLikeButton(track, songItem, true); // true indicates the song is already liked
-    addPlaylistDropdown(track, songItem);
+    const right = document.createElement("div")
+    right.classList.add("right")
+    right.innerHTML = `
+    <p>${formatDuration(track.duration_ms)}</p>
+    `
+    addLikeButton(track, right, true); // true indicates the song is already liked
+    addPlaylistDropdown(track, right);
+    songItem.appendChild(right)
     songsDiv.appendChild(songItem);
 
     // Add click event for song
@@ -2649,15 +3052,24 @@ function displayRecentlyPlayed(items) {
     const songItem = document.createElement("div");
     songItem.classList.add("recently-played-item");
     songItem.innerHTML = `
+    <div class="left">
       <img src="${track.album.images && track.album.images[0] ? track.album.images[0].url : "default-image-url"}" alt="${track.name}">
       <div>
         <h3>${track.name}</h3>
         <p>${track.artists.map((artist) => artist.name).join(", ")}</p>
+        </div>
       </div>
-      <p>${formatDuration(track.duration_ms)}</p>
+     
     `;
-    addLikeButton(track, songItem);
-    addPlaylistDropdown(track, songItem);
+    const right = document.createElement("div")
+    right.classList.add("right")
+    right.innerHTML = `
+    <p>${formatDuration(track.duration_ms)}</p>
+    `
+    addLikeButton(track, right);
+    addPlaylistDropdown(track, right);
+    songItem.appendChild(right)
+    
     songsDiv.appendChild(songItem);
 
     // Add click event for song
@@ -2677,7 +3089,8 @@ function displayFollowedArtists(artists) {
   header.className = 'section-header';
   header.textContent = 'My Artists';
   container.appendChild(header);
-
+  const artistItemContainer = document.createElement("div")
+  artistItemContainer.classList.add("artist-item-container")
   artists.forEach(artist => {
     const element = document.createElement('div');
     element.className = 'artist-item';
@@ -2688,8 +3101,9 @@ function displayFollowedArtists(artists) {
     element.addEventListener('click', () => {
       displayArtistInfo(artist); // Truyền đối tượng artist đầy đủ
     });
-    container.appendChild(element);
+    artistItemContainer.appendChild(element);
   });
+  container.appendChild(artistItemContainer)
 }
 async function displaySavedAlbums() {
   const accessToken =  getUserAccessToken();
@@ -2719,7 +3133,9 @@ async function displaySavedAlbums() {
     header.className = 'section-header';
     header.textContent = 'My Albums';
     container.appendChild(header);
-
+    const albumItemContainer = document.createElement("div")
+    albumItemContainer.classList.add("album-item-container")
+    
     albums.forEach(albumItem => {
       const album = albumItem.album;
       const element = document.createElement('div');
@@ -2731,11 +3147,14 @@ async function displaySavedAlbums() {
       element.addEventListener('click', () => {
         displayAlbumInfo(album.id);
       });
-      container.appendChild(element);
+      albumItemContainer.appendChild(element);
     });
+    container.appendChild(albumItemContainer)
   } catch (error) {
     console.error('Error fetching saved albums:', error);
   }
+
+ 
 }
 
 async function fetchCategoryPlaylists(categoryId) {
