@@ -3,6 +3,7 @@
 A web-based music streaming platform that integrates with Spotify services, providing a seamless music playback experience directly in the browser.
 
 ![Project Screenshot](music-app/public/images/Screenshot.png)
+## Demo: https://drive.google.com/file/d/12Pu3Bv0Rzz81PHQCez2lSm15XNxzDU5M/view?usp=sharing
 
 ## Features
 
