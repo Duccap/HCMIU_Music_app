@@ -1154,6 +1154,9 @@ button:hover {
   cursor: pointer;
   font-size: 1.5em;
 }
+.track-item.playing {
+  background-color: rgba(32, 230, 14, 0.1);
+}
 
 .song-item Button {
   background: none;

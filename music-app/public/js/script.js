@@ -1,18 +1,5 @@
 
 
-  // window.addEventListener('popstate', function () {
-  //     const url = location.pathname;
-  //     fetch(url)
-  //         .then(response => response.text())
-  //         .then(html => {
-  //             const parser = new DOMParser();
-  //             const doc = parser.parseFromString(html, 'text/html');
-  //             mainContent.innerHTML = doc.querySelector('.main-content').innerHTML;
-  //         });
-  // });
-
-
-
 
 function loadPage(page) {
   fetch(page)
@@ -48,15 +35,6 @@ menuOpenButton.addEventListener("click", function () {
   }
 });
 
-// menuOpenButton.addEventListener('click', function() {
-//     sidebar.classList.toggle('collapsed');
-//    console.log("hello")
-//    const queue = document.createElement('div')
-//    queue.style.width = "200px"
-//    document.querySelector('.container').appendChild(
-//         queue
-//    );
-// });
 
 // Lấy tham chiếu đến thẻ main và header
 var main = document.querySelector("main");
@@ -107,421 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
     .catch((error) => console.log(error));
 });
 
-// let searchResults = []; // Lưu trữ kết quả tìm kiếm ban đầu
 
-// async function searchSpotify() {
-//   const query = document.getElementById("searchQuery").value;
-
-//   if (!query) {
-//     alert("Vui lòng nhập từ khóa để tìm kiếm.");
-//     return;
-//   }
-
-//   const spotifySearchUrl = `https://v1.nocodeapi.com/tvkhang/spotify/dzYJkRIsojRMPuIT/search?q=${encodeURIComponent(query)}`; // Đây là hàm JavaScript dùng để mã hóa một chuỗi URL
-
-//   const headers = new Headers();
-//   headers.append("Content-Type", "application/json");
-
-//   const requestOptions = {
-//     method: "GET",
-//     headers: headers,
-//     redirect: "follow",
-//   };
-
-//   try {
-//     const response = await fetch(spotifySearchUrl, requestOptions);
-//     const searchResult = await response.json();
-
-//     handleSearchResult(searchResult);
-//   } catch (error) {
-//     handleSearchError(error);
-//   }
-// }
-
-// var myHeaders = new Headers();
-// myHeaders.append("Content-Type", "application/json");
-
-// function searchSpotify() {
-//     var searchQuery = document.getElementById('searchQuery').value;
-//     var requestOptions = {
-//         method: 'GET',
-//         headers: myHeaders,
-//         redirect: 'follow'
-//     };
-
-//     fetch(`https://v1.nocodeapi.com/tvkhang/spotify/dzYJkRIsojRMPuIT/search?q=${encodeURIComponent(searchQuery)}&type=track`, requestOptions)
-//         .then(response => response.json())  // Chuyển đổi kết quả từ dạng text sang JSON
-//         .then(data => {
-//             var resultsDiv = document.getElementById('results');
-//             resultsDiv.innerHTML = ''; // Xóa kết quả tìm kiếm cũ
-//             data.tracks.items.forEach(track => {
-//                 var src = `https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=1`;
-//                 var iframe = `<iframe style="border-radius:12px" src="${src}" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
-//                 resultsDiv.innerHTML += iframe; // Thêm iframe mới vào kết quả
-//             });
-//         })
-//         .catch(error => console.error('Error:', error));
-// }
-
-// function handleSearchResult(result) {
-//   displayAllResults(result)
-// }
-
-// function displayAllResults(result) {
-//   const resultsDiv = document.getElementById("results");
-//   resultsDiv.innerHTML = ""; // Clear previous results
-
-//   const categories = ["albums", "tracks", "artists", "playlists"];
-
-//   categories.forEach((category) => {
-//     if (result[category] && result[category].items.length > 0) {
-//       const categoryTitle = document.createElement("h2");
-//       categoryTitle.textContent =
-//         category.charAt(0).toUpperCase() + category.slice(1);
-//       resultsDiv.appendChild(categoryTitle);
-
-//       result[category].items.forEach((item) => {
-//         const itemElement = createItemElement(category, item);
-//         resultsDiv.appendChild(itemElement);
-//       });
-//     }
-//   });
-// }
-
-// function createItemElement(category, item) {
-//   const itemElement = document.createElement("div");
-//   itemElement.className = "searchre";
-
-//   const itemTitle = document.createElement("h3");
-//   itemTitle.textContent = item.name;
-//   itemElement.appendChild(itemTitle);
-
-//   if (category === "albums" || category === "tracks") {
-//     const artistsParagraph = document.createElement("p");
-//     const artists = item.artists.map((artist) => artist.name).join(", ");
-//     artistsParagraph.textContent = "by " + artists;
-//     itemElement.appendChild(artistsParagraph);
-//   }
-
-//   if (item.images && item.images.length > 0) {
-//     const itemImage = document.createElement("img");
-//     itemImage.src = item.images[0].url; // Use the first image in the array
-//     itemImage.alt = item.name;
-//     itemElement.appendChild(itemImage);
-//   }
-
-//   return itemElement;
-// }
-
-// function displayNoResultsMessage() {
-//   document.getElementById("results").innerHTML =
-//     "Không có kết quả nào được tìm thấy.";
-// }
-
-// function handleSearchError(error) {
-//   console.log("Error fetching data from Spotify API:", error);
-//   // Có thể hiển thị thông báo lỗi trên giao diện người dùng thay vì chỉ log lỗi vào console.
-// }
-
-// let currentResults = {};
-
-// function handleSearchResult(result) {
-//   currentResults = result; // Lưu kết quả hiện tại để lọc
-//   displayAllResults(result);
-// }
-
-// function filterResults(category) {
-//   const resultsDiv = document.getElementById("results");
-//   resultsDiv.innerHTML = ""; // Clear previous results
-
-//   if (category === "all") {
-//     displayAllResults(currentResults);
-//   } else {
-//     const filteredCategory = category === "songs" ? "tracks" : category;
-//     if (
-//       currentResults[filteredCategory] &&
-//       currentResults[filteredCategory].items.length > 0
-//     ) {
-//       currentResults[filteredCategory].items.forEach((item) => {
-//         const itemElement = createItemElement(filteredCategory, item);
-//         resultsDiv.appendChild(itemElement);
-//       });
-//     } else {
-//       displayNoResultsMessage();
-//     }
-//   }
-// }
-
-// var myHeaders = new Headers();
-// myHeaders.append("Content-Type", "application/json");
-
-// let currentResults = {};
-
-// function searchSpotify(retryCount = 0) {
-//     var searchQuery = document.getElementById('searchQuery').value;
-//     var cacheKey = `spotify-search-${searchQuery}`;
-//     var cachedData = localStorage.getItem(cacheKey);
-
-//     if (cachedData) {
-//         console.log("Using cached data");
-//         currentResults = JSON.parse(cachedData);
-//         displayAllResults(currentResults);
-//         return;
-//     }
-
-//     var requestOptions = {
-//         method: 'GET',
-//         headers: myHeaders,
-//         redirect: 'follow'
-//     };
-
-//     fetch(`https://v1.nocodeapi.com/tvkhang/spotify/dzYJkRIsojRMPuIT/search?q=${encodeURIComponent(searchQuery)}&type=album,artist,playlist,track&perPage=10`, requestOptions)
-//         .then(response => {
-//             if (response.status === 429) {
-//                 if (retryCount < 5) {
-//                     const retryAfter = Math.pow(2, retryCount) * 1000; // Exponential backoff
-//                     console.log(`Retrying after ${retryAfter} ms...`);
-//                     setTimeout(() => searchSpotify(retryCount + 1), retryAfter);
-//                 } else {
-//                     throw new Error('Too Many Requests');
-//                 }
-//             } else {
-//                 return response.json();
-//             }
-//         })
-//         .then(data => {
-//             localStorage.setItem(cacheKey, JSON.stringify(data)); // Cache the data
-//             currentResults = data; // Save current results for filtering
-//             displayAllResults(data);
-//         })
-//         .catch(error => console.error('Error:', error));
-// }
-
-// function preloadData(searchQuery, nextPage) {
-//   const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(searchQuery)}&type=track,album,playlist,artist&perPage=10&offset=${nextPage * 10}`;
-//   fetch(url)
-//       .then(response => response.json())
-//       .then(data => {
-//           // Lưu trữ dữ liệu tải trước vào sessionStorage hoặc một biến tạm thời
-//           sessionStorage.setItem(`preloaded-${nextPage}`, JSON.stringify(data));
-//       })
-//       .catch(error => console.error('Error preloading data:', error));
-// }
-
-// function displayAllResults(result) {
-//   const resultsDiv = document.getElementById("results");
-//   resultsDiv.innerHTML = ""; // Clear previous results
-
-//   // Hiển thị Top Result
-//   if (result.artists && result.artists.items.length > 0) {
-//       const topResult = result.artists.items[0];
-//       const topResultDiv = document.createElement("div");
-//       topResultDiv.className = "top-result";
-
-//       const topResultImage = document.createElement("img");
-//       topResultImage.src = topResult.images[0].url;
-//       topResultImage.alt = topResult.name;
-//       topResultDiv.appendChild(topResultImage);
-
-//       const topResultName = document.createElement("h2");
-//       topResultName.textContent = topResult.name;
-//       topResultDiv.appendChild(topResultName);
-
-//       resultsDiv.appendChild(topResultDiv);
-//   }
-
-//   // Hiển thị Songs
-//   if (result.tracks && result.tracks.items.length > 0) {
-//       const songsDiv = document.createElement("div");
-//       songsDiv.className = "songs";
-
-//       const songsTitle = document.createElement("h2");
-//       songsTitle.textContent = "Songs";
-//       songsDiv.appendChild(songsTitle);
-
-//       result.tracks.items.forEach((track) => {
-//           const trackElement = createItemElement("tracks", track);
-//           songsDiv.appendChild(trackElement);
-//       });
-
-//       resultsDiv.appendChild(songsDiv);
-//   }
-
-//   // Hiển thị Albums
-//   if (result.albums && result.albums.items.length > 0) {
-//       const albumsDiv = document.createElement("div");
-//       albumsDiv.className = "albums";
-
-//       const albumsTitle = document.createElement("h2");
-//       albumsTitle.textContent = "Albums";
-//       albumsDiv.appendChild(albumsTitle);
-
-//       result.albums.items.forEach((album) => {
-//           const albumElement = createItemElement("albums", album);
-//           albumsDiv.appendChild(albumElement);
-//       });
-
-//       resultsDiv.appendChild(albumsDiv);
-//   }
-
-//   // Hiển thị Playlists
-//   if (result.playlists && result.playlists.items.length > 0) {
-//       const playlistsDiv = document.createElement("div");
-//       playlistsDiv.className = "playlists";
-
-//       const playlistsTitle = document.createElement("h2");
-//       playlistsTitle.textContent = "Playlists";
-//       playlistsDiv.appendChild(playlistsTitle);
-
-//       result.playlists.items.forEach((playlist) => {
-//           const playlistElement = createItemElement("playlists", playlist);
-//           playlistsDiv.appendChild(playlistElement);
-//       });
-
-//       resultsDiv.appendChild(playlistsDiv);
-//   }
-
-//   // Hiển thị Artists
-//   if (result.artists && result.artists.items.length > 0) {
-//       const artistsDiv = document.createElement("div");
-//       artistsDiv.className = "artists";
-
-//       const artistsTitle = document.createElement("h2");
-//       artistsTitle.textContent = "Artists";
-//       artistsDiv.appendChild(artistsTitle);
-
-//       result.artists.items.forEach((artist) => {
-//           const artistElement = createItemElement("artists", artist);
-//           artistsDiv.appendChild(artistElement);
-//       });
-
-//       resultsDiv.appendChild(artistsDiv);
-//   }
-// }
-
-// function createItemElement(category, item) {
-//   const itemElement = document.createElement("div");
-//   itemElement.className = "search-result";
-
-//   const itemTitle = document.createElement("h3");
-//   itemTitle.textContent = item.name;
-//   itemElement.appendChild(itemTitle);
-
-//   if (category === "albums" || category === "tracks") {
-//       const artistsParagraph = document.createElement("p");
-//       const artists = item.artists.map((artist) => artist.name).join(", ");
-//       artistsParagraph.textContent = "by " + artists;
-//       itemElement.appendChild(artistsParagraph);
-//   }
-
-//   if (item.images && item.images.length > 0) {
-//       const itemImage = document.createElement("img");
-//       itemImage.src = item.images[0].url; // Use the first image in the array
-//       itemImage.alt = item.name;
-//       itemElement.appendChild(itemImage);
-//   }
-
-//   let src;
-//     switch (category) {
-//         case "tracks":
-//             src = `https://open.spotify.com/embed/track/${item.id}?utm_source=generator`;
-//             break;
-//         case "albums":
-//             src = `https://open.spotify.com/embed/album/${item.id}?utm_source=generator`;
-//             break;
-//         case "playlists":
-//             src = `https://open.spotify.com/embed/playlist/${item.id}?utm_source=generator`;
-//             break;
-//         case "artists":
-//             src = `https://open.spotify.com/embed/artist/${item.id}?utm_source=generator`;
-//             break;
-//         default:
-//             src = "";
-//     }
-
-//     if (src) {
-//         const iframe = `<iframe style="border-radius:12px" src="${src}" width="100%" height="380" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>`;
-//         itemElement.innerHTML += iframe;
-//     }
-
-//     return itemElement;
-// }
-
-// function filterResults(category) {
-//   const resultsDiv = document.getElementById("results");
-//   resultsDiv.innerHTML = ""; // Clear previous results
-
-//   if (category === "all") {
-//       displayAllResults(currentResults);
-//   } else {
-//       const filteredCategory = category === "songs" ? "tracks" : category;
-//       if (
-//           currentResults[filteredCategory] &&
-//           currentResults[filteredCategory].items.length > 0
-//       ) {
-//           currentResults[filteredCategory].items.forEach((item) => {
-//               const itemElement = createItemElement(filteredCategory, item);
-//               resultsDiv.appendChild(itemElement);
-//           });
-//       } else {
-//           displayNoResultsMessage();
-//       }
-//   }
-// }
-
-// function displayNoResultsMessage() {
-//   document.getElementById("results").innerHTML =
-//       "Không có kết quả nào được tìm thấy.";
-// }
-
-// function cacheAndDisplayResults(data) {
-//   const resultsDiv = document.getElementById("results");
-//   resultsDiv.innerHTML = ""; // Clear previous results
-
-//   data.tracks.items.forEach(track => {
-//       const trackInfo = {
-//           id: track.id,
-//           name: track.name,
-//           artists: track.artists.map(artist => artist.name).join(", "),
-//           albumName: track.album.name,
-//           embedUrl: `https://open.spotify.com/embed/track/${track.id}`
-//       };
-
-//       // Lưu trữ vào localStorage
-//       localStorage.setItem(`spotify-track-${track.id}`, JSON.stringify(trackInfo));
-
-//       // Tạo và hiển thị mã nhúng
-//       const iframe = document.createElement('iframe');
-//       iframe.style.borderRadius = "12px";
-//       iframe.src = trackInfo.embedUrl;
-//       iframe.width = "100%";
-//       iframe.height = "380";
-//       iframe.frameBorder = "0";
-//       iframe.allowFullscreen = "";
-//       iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
-//       resultsDiv.appendChild(iframe);
-//   });
-// }
-
-// function displayCachedEmbed(trackId) {
-//   const cachedTrackInfo = JSON.parse(localStorage.getItem(`spotify-track-${trackId}`));
-//   if (cachedTrackInfo) {
-//       const resultsDiv = document.getElementById("results");
-//       const iframe = document.createElement('iframe');
-//       iframe.style.borderRadius = "12px";
-//       iframe.src = cachedTrackInfo.embedUrl;
-//       iframe.width = "100%";
-//       iframe.height = "380";
-//       iframe.frameBorder = "0";
-//       iframe.allowFullscreen = "";
-//       iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
-//       resultsDiv.appendChild(iframe);
-//   } else {
-//       console.log("No cached data found for this track");
-//   }
-// }
-
-//*****545-628 */
 // Khai báo biến toàn cục để quản lý access token và thời gian hết hạn
 let accessToken = null;
 let tokenExpirationTime = null;
@@ -531,7 +95,65 @@ function isTokenExpired() {
   const now = new Date();
   return now >= tokenExpirationTime;
 }
+// === GLOBAL VARIABLES === //
+let isRepeating = false;
+let isPlaying = false;
+let isCustomEnabled = false;
+let isLyricsVisible = false;
+let spotifyPlayer = null;
+let deviceId = null;
 
+
+// Khởi tạo Web Playback SDK
+window.onSpotifyWebPlaybackSDKReady = () => {
+  const userAccessToken = getUserAccessToken();
+  if (!userAccessToken) {
+      console.error('User needs to be logged in to initialize player');
+      return;
+  }
+
+  spotifyPlayer = new Spotify.Player({
+      name: 'HCMIU Music Player',
+      getOAuthToken: cb => { cb(userAccessToken); },
+      volume: 0.5
+  });
+
+  // Error handling
+  spotifyPlayer.addListener('initialization_error', ({ message }) => {
+      console.error('Failed to initialize', message);
+  });
+
+  spotifyPlayer.addListener('authentication_error', ({ message }) => {
+      console.error('Failed to authenticate', message);
+  });
+
+  spotifyPlayer.addListener('account_error', ({ message }) => {
+      console.error('Failed to validate Spotify account', message);
+  });
+
+  spotifyPlayer.addListener('playback_error', ({ message }) => {
+      console.error('Failed to perform playback', message);
+  });
+
+  // Playback status updates
+  spotifyPlayer.addListener('player_state_changed', state => {
+      if (state) {
+          updatePlayerUIFromState(state);
+      }
+  });
+
+  // Ready
+  spotifyPlayer.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+      deviceId = device_id;
+      
+      // Set this device as active
+      setActiveDevice(device_id);
+  });
+
+  // Connect to the player
+  spotifyPlayer.connect();
+};
 // Hàm bất đồng bộ để lấy access token từ Spotify. Sử dụng Client Credentials flow để xác thực.
 async function getSpotifyAccessToken() {
   const clientId = "1825746372a54d109f5b454536f999ab"; // ID của client
@@ -612,82 +234,6 @@ getSpotifyAccessToken().then((accessToken) => {
   }
 });
 
-// ĐĂNG NHẬP TOKEN và PROFILE //
-// document.addEventListener('DOMContentLoaded', () => {
-//   const loginButton = document.getElementById('loginWithSpotify');
-//   const userProfile = document.getElementById('userProfile');
-//   const userName = document.getElementById('userName');
-//   const timerElement = document.getElementById('timer');
-//   let tokenExpirationTime;
-
-//   // Kiểm tra trạng thái user token khi trang được tải
-//   checkUserToken();
-
-//   loginButton.addEventListener('click', async () => {
-//     const token = await getSpotifyAccessToken();
-//     if (token) {
-//       tokenExpirationTime = new Date().getTime() + token.expires_in * 1000; // Lưu thời gian hết hạn của token
-//       localStorage.setItem('spotifyToken', JSON.stringify(token));
-//       updateUIForLoggedInUser(token);
-//       startTokenExpirationTimer(token.expires_in);
-//     }
-//   });
-
-//   function checkUserToken() {
-//     const token = JSON.parse(localStorage.getItem('spotifyToken'));
-//     if (token && !isTokenExpired()) {
-//       tokenExpirationTime = new Date().getTime() + token.expires_in * 1000;
-//       updateUIForLoggedInUser(token);
-//       startTokenExpirationTimer((tokenExpirationTime - new Date().getTime()) / 1000);
-//     } else {
-//       updateUIForLoggedOutUser();
-//     }
-//   }
-
-//   function updateUIForLoggedInUser(token) {
-//     loginButton.style.display = 'none';
-//     userProfile.style.display = 'block';
-//     userName.textContent = 'User Name'; // Thay thế bằng tên người dùng thực tế
-//   }
-
-//   function updateUIForLoggedOutUser() {
-//     loginButton.style.display = 'block';
-//     userProfile.style.display = 'none';
-//     timerElement.textContent = '00:00:00';
-//   }
-
-//   function startTokenExpirationTimer(duration) {
-//     const endTime = new Date().getTime() + duration * 1000;
-//     const interval = setInterval(() => {
-//       const now = new Date().getTime();
-//       const timeLeft = endTime - now;
-
-//       if (timeLeft <= 0) {
-//         clearInterval(interval);
-//         localStorage.removeItem('spotifyToken');
-//         updateUIForLoggedOutUser();
-//         return;
-//       }
-
-//       const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-//       const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-//       const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-//       timerElement.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-//     }, 1000);
-//   }
-
-//   function pad(number) {
-//     return number < 10 ? '0' + number : number;
-//   }
-// });
-
-
-// HEADER //
-// document.addEventListener('DOMContentLoaded', () => {
-//   document.getElementById('musicLink').addEventListener('click', loadMusicContent);
-//   document.getElementById('profileLink').addEventListener('click', loadProfileContent);
-// });
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('musicLink').addEventListener('click', loadMusicContent);
@@ -1005,11 +551,6 @@ function updateTrendingSong(song) {
 }
 
 
-
-// document.addEventListener('DOMContentLoaded', async () => {
-//   const genres = await fetchGenres();
-//   displayGenres(genres);
-// });
 async function fetchGenres() {
   const accessToken = await ensureAccessToken(); // Giả sử bạn đã có hàm này để lấy accessToken
   const url = 'https://api.spotify.com/v1/browse/categories';
@@ -1034,22 +575,6 @@ async function fetchGenres() {
     return [];
   }
 }
-
-// function displayGenres(genres) {
-//   const itemsContainer = document.querySelector('.items');
-//   itemsContainer.innerHTML = ''; // Xóa các mục hiện tại
-
-//   genres.forEach(genre => {
-//     const genreDiv = document.createElement('div');
-//     genreDiv.className = 'item';
-//     genreDiv.style.backgroundColor = applyRandomColors(); // Áp dụng màu ngẫu nhiên
-//     genreDiv.innerHTML = `<p>${genre.name}</p>`;
-//     genreDiv.addEventListener('click', () => {
-//       window.location.href = `/genre/${genre.id}`; // Giả sử đây là URL cho trang của thể loại
-//     });
-//     itemsContainer.appendChild(genreDiv);
-//   });
-// }
 
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -2631,19 +2156,27 @@ async function updatePlayerUI(trackId) {
 }
 
 async function playTrack(trackUri) {
-  const accessToken = await getUserAccessToken(); // Lấy user access token
+  if (!deviceId) {
+      console.error('No device ID available');
+      return;
+  }
 
-  const response = await fetch("https://api.spotify.com/v1/me/player/play", {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ uris: [trackUri] }),
-  });
-
-  if (!response.ok) {
-    console.error("Failed to play track");
+  // Sử dụng SDK thay vì gọi API trực tiếp
+  if (spotifyPlayer) {
+      try {
+          await fetch(`https://api.spotify.com/v1/me/player/play?device_id=${deviceId}`, {
+              method: 'PUT',
+              headers: {
+                  'Authorization': `Bearer ${getUserAccessToken()}`,
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                  uris: [trackUri]
+              })
+          });
+      } catch (error) {
+          console.error('Error playing track:', error);
+      }
   }
 }
 function updatePlayPauseIcon(isPlaying) {
@@ -2731,28 +2264,38 @@ document.getElementById("previousIcon").addEventListener("click", async () => {
   await skipToPrevious();
 });
 async function skipToNext() {
+  if (!currentTrackList || currentTrackList.length === 0) {
+      console.log("No track list available");
+      return;
+  }
+
   if (currentTrackIndex < currentTrackList.length - 1) {
-    currentTrackIndex++;
-    let nextTrack = currentTrackList[currentTrackIndex];
-    if (currentListType === "playlist") {
-      nextTrack = nextTrack.track; // Trong playlist, track được lưu trong thuộc tính track của item
-    }
-    await playTrackAndUpdateUI(nextTrack);
+      currentTrackIndex++;
+      let nextTrack = currentTrackList[currentTrackIndex];
+      if (currentListType === "playlist") {
+          nextTrack = nextTrack.track;
+      }
+      await playTrackAndUpdateUI(nextTrack);
   } else {
-    console.log("This is the last track in the list.");
+      console.log("This is the last track in the list.");
   }
 }
 
 async function skipToPrevious() {
+  if (!currentTrackList || currentTrackList.length === 0) {
+      console.log("No track list available");
+      return;
+  }
+
   if (currentTrackIndex > 0) {
-    currentTrackIndex--;
-    let previousTrack = currentTrackList[currentTrackIndex];
-    if (currentListType === "playlist") {
-      previousTrack = previousTrack.track; // Trong playlist, track được lưu trong thuộc tính track của item
-    }
-    await playTrackAndUpdateUI(previousTrack);
+      currentTrackIndex--;
+      let previousTrack = currentTrackList[currentTrackIndex];
+      if (currentListType === "playlist") {
+          previousTrack = previousTrack.track;
+      }
+      await playTrackAndUpdateUI(previousTrack);
   } else {
-    console.log("This is the first track in the list.");
+      console.log("This is the first track in the list.");
   }
 }
 
@@ -2793,10 +2336,6 @@ async function setVolume(volumePercent) {
   }
 }
 
-let isRepeating = false;
-let isPlaying = false;
-let isCustomEnabled = false;
-let isLyricsVisible = false;
 
 // Hàm để phát bài hát và cập nhật UI !!!!!!!!!!!!!!!!1
 async function playTrackAndUpdateUI(track) {
@@ -2818,7 +2357,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
+// Thêm biến để lưu trữ tracks của playlist hiện tại
+let currentTrackList = [];
+let currentTrackIndex = -1;
+let currentListType = null;
 async function loadSectionData(section) {
   const accessToken =  getUserAccessToken();
   if (!accessToken) {
@@ -2849,11 +2391,8 @@ async function loadSectionData(section) {
     case 'favourites':
       url = `https://api.spotify.com/v1/me/tracks`;
       break;
-    case 'Best of 2023':
+    case 'Best of playlist':
       url = `https://api.spotify.com/v1/playlists/57EG9lWmdn7HHofXuQVsow`;
-      break;
-    case 'Best of 2022':
-      url = `https://api.spotify.com/v1/playlists/37i9dQZF1DX7DJr8fImN7B`;
       break;
       case 'my-playlists':
       url = `https://api.spotify.com/v1/me/playlists`;
@@ -2877,7 +2416,12 @@ async function loadSectionData(section) {
     }
 
     const data = await response.json();
-    console.log("Fetched data:", data); // Thêm dòng này để kiểm tra dữ liệu
+    // Nếu là playlist, lưu tracks vào currentTrackList
+    if (section === 'Best of playlist') {
+      currentTrackList = data.tracks.items;
+      currentListType = "playlist";
+      currentTrackIndex = -1; // Reset index
+  }
 
     displaySectionData(data, section);
   } catch (error) {
@@ -2891,17 +2435,17 @@ function displaySectionData(data, section) {
   const resultsDiv = document.getElementById("results");
   resultsDiv.innerHTML = ""; // Xóa kết quả trước
 
-  if (section === 'explore' || section === 'genres' || section === 'made-for-you' || section === 'albums' || section === 'artists' || section === 'recents' || section === 'favourites' || section === 'Best of 2023' || section === 'Best of 2022' || section === 'my-playlists') {
+  if (section === 'explore' || section === 'genres' || section === 'made-for-you' || section === 'albums' || section === 'artists' || section === 'recents' || section === 'favourites' || section === 'Best of playlist' || section === 'Best of 2022' || section === 'my-playlists') {
     resultsDiv.classList.add('explore-layout'); // Thêm class cho layout
 
     // Thêm header
     const header = document.createElement('h2');
-    header.textContent = section === 'explore' ? "New Releases" : (section === 'genres' ? "Genres" : (section === 'made-for-you' ? "Made For You" : (section === 'albums' ? "My Albums" : (section === 'artists' ? "My Artists" : (section === 'recents' ? "Recently Played" : (section === 'favourites' ? "Favourites" : (section === 'Best of 2023' ? "Best of 2023" : (section === 'Best of 2022' ? "Best of 2022" : (section === 'my-playlists' ? "My Playlists" : "")))))))));
+    header.textContent = section === 'explore' ? "New Releases" : (section === 'genres' ? "Genres" : (section === 'made-for-you' ? "Made For You" : (section === 'albums' ? "My Albums" : (section === 'artists' ? "My Artists" : (section === 'recents' ? "Recently Played" : (section === 'favourites' ? "Favourites" : (section === 'Best of playlist' ? "Best of playlist" : (section === 'Best of 2022' ? "Best of 2022" : (section === 'my-playlists' ? "My Playlists" : "")))))))));
     header.className = 'section-header';
     resultsDiv.appendChild(header);
 
-    if (section === 'Best of 2023') {
-      displayPlaylistInfo('57EG9lWmdn7HHofXuQVsow'); // ID của playlist "Best of 2023"
+    if (section === 'Best of playlist') {
+      displayPlaylistInfo('57EG9lWmdn7HHofXuQVsow'); // ID của playlist "Best of playlist"
     } else if (section === 'Best of 2022') {
       displayPlaylistInfo('37i9dQZF1DX7DJr8fImN7B'); // ID của playlist "Best of 2022"
     } else if (section === 'my-playlists') {
@@ -3189,28 +2733,3 @@ function getRandomColor() {
   const colors = ["#ff4b4b", "#4bff4b", "#4b4bff", "#ff4bff", "#4bffff", "#ffff4b"];
   return colors[Math.floor(Math.random() * colors.length)];
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// hàm liên quan genres// 
-
-
-  // function getRandomColor() {
-  //   const colors = ["#ff4b4b", "#4bff4b", "#4b4bff", "#ff4bff", "#4bffff", "#ffff4b"];
-  //   return colors[Math.floor(Math.random() * colors.length)];
-  // }
-
